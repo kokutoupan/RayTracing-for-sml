@@ -45,6 +45,11 @@ structure Main = struct
       col
     end;
 
+  fun recode2col (recode: Type.hit_record) =
+    case recode of 
+         Type.NoHit => Color.create(0.0,0.0,0.0)
+       | Type.Hit hit => Color.create((#t hit),0.0,1.0)
+
   fun render filename =
     let
       val out = TextIO.openOut filename
@@ -53,8 +58,12 @@ structure Main = struct
       val _ = TextIO.output (out, "P3\n")
       val _ = TextIO.output (out, Int.toString image_width ^ " " ^ Int.toString image_height ^ "\n255\n")
 
+      val sq = Sphere.create (Vec3.create(0.0, 0.0, ~1.0))  0.5;
       (* メインループ：ピクセル毎にRGB値を計算して出力 *)
       val _ =
+
+
+
         List.app (fn j =>
           let 
             val _ = print("\rScanlines remaining:" ^ Int.toString (image_height - j) )
@@ -69,7 +78,10 @@ structure Main = struct
 
                 val ray = Ray.create camera_center (Vec3.unit_vector ray_dir);
 
-                val col = ray_color ray;
+                val recode = Sphere.hit sq ray 0.0 100000.0;
+
+                (*val col = ray_color ray;*)
+                val col = recode2col recode;
 
                 val _ = Color.write_color out col
               in

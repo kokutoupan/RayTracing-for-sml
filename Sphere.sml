@@ -1,13 +1,12 @@
 structure Sphere = struct
-  (*open Type;*)
-  
-  type t = Type.sphere;
+  open Type;
+  type t = sphere;
 
   fun create (center: Vec3.t) (radius: real) = {center = center, radius =
     radius}
 
   fun hit (sphere: t) (ray: Ray.t) (ray_t_min: real) (ray_t_max:
-    real):Type.hit_record =
+    real):hit_record =
   let
     val oc = Vec3.sub (#center sphere) (#orig ray);
 
@@ -17,22 +16,22 @@ structure Sphere = struct
 
     val discriminant = h*h - a*c
   in
-    if (discriminant) < 0.0 then Type.NoHit else
+    if (discriminant) < 0.0 then NoHit else
     let
       val sqrtd = Math.sqrt discriminant;
       val root = (h - sqrtd) / a;
 
       fun closest_hit (root: real) =
         if(root < ray_t_min orelse root > ray_t_max )then 
-          Type.NoHit
+          NoHit
         else 
-          Type.Hit { p = Ray.at ray root, normal = Vec3.unit_vector (Vec3.sub
+          Hit { p = Ray.at ray root, normal = Vec3.unit_vector (Vec3.sub
           (#center sphere) (Ray.at ray root)), t = root}
 
     in
         case (closest_hit root ) of
-             Type.NoHit => closest_hit ((h + sqrtd)/a)
-           | Type.Hit hit => Type.Hit hit
+             NoHit => closest_hit ((h + sqrtd)/a)
+           | Hit hit => Hit hit
     end
   end;
 end;
