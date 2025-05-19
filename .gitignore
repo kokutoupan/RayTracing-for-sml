@@ -1,0 +1,6 @@
+# SML/NJのビルド関連
+.cm/
+*.cm
+
+# VSCodeの設定
+.vscode/
