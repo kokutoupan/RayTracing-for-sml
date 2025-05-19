@@ -3,6 +3,8 @@ structure Vec3 = struct
 
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
 
+  val zero = {x = 0.0, y = 0.0, z = 0.0}
+
   fun add (v1:t) (v2:t) =
     { x = #x v1 + #x v2,
       y = #y v1 + #y v2,
@@ -65,10 +67,11 @@ structure Color = struct
     val g = #y color
     val b = #z color
 
+    val intensity = Interval.clamp (0.0,1.0)
 
-    val ir = Real.toInt IEEEReal.TO_NEAREST (r * 255.999)
-    val ig = Real.toInt IEEEReal.TO_NEAREST (g * 255.999)
-    val ib = Real.toInt IEEEReal.TO_NEAREST (b * 255.999)
+    val ir = Real.toInt IEEEReal.TO_NEAREST (intensity r * 255.999)
+    val ig = Real.toInt IEEEReal.TO_NEAREST (intensity g * 255.999)
+    val ib = Real.toInt IEEEReal.TO_NEAREST (intensity b * 255.999)
 
     val line = Int.toString ir ^ " " ^ Int.toString ig ^ " " ^ Int.toString ib ^ "\n"    
   in

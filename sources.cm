@@ -2,7 +2,10 @@ Group is
   $smlnj/basis/basis.cm
   Type.sml
   Vec3.sml
+  Interval.sml
   Ray.sml
+  Hittable.sml
   Sphere.sml
   Hittable_list.sml
+  Camera.sml
   Main.sml

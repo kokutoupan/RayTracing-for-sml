@@ -3,7 +3,8 @@ structure Type = struct
   datatype hit_record = NoHit|  Hit of{
     p: Vec3.t,
     normal: Vec3.t,
-    t: real
+    t: real,
+    front_face: bool
   };
   datatype shape = Hittable_listT of shape list
                  | SphereT of sphere;

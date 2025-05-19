@@ -2,11 +2,10 @@ structure Sphere = struct
   open Type;
   type t = sphere;
 
-  fun create (center: Vec3.t) (radius: real) = {center = center, radius =
+  fun create (center: Vec3.t) (radius: real) = SphereT {center = center, radius =
     radius}
 
-  fun hit (sphere: t) (ray: Ray.t) (ray_t_min: real) (ray_t_max:
-    real):hit_record =
+  fun hit (sphere: t) (ray: Ray.t) (t_ren:Interval.t):hit_record =
   let
     val oc = Vec3.sub (#center sphere) (#orig ray);
 
@@ -21,12 +20,18 @@ structure Sphere = struct
       val sqrtd = Math.sqrt discriminant;
       val root = (h - sqrtd) / a;
 
+
       fun closest_hit (root: real) =
-        if(root < ray_t_min orelse root > ray_t_max )then 
+        if( not (Interval.surrounds t_ren root))then 
           NoHit
         else 
-          Hit { p = Ray.at ray root, normal = Vec3.unit_vector (Vec3.sub
-          (#center sphere) (Ray.at ray root)), t = root}
+          let 
+            val p = Ray.at ray root;
+            val outward_normal = Vec3.divide (Vec3.sub p (#center sphere)) (#radius sphere);
+            val (f,n) = Hittable.face_normal ray outward_normal
+          in
+            Hit { p = p, normal = n, t = root, front_face = f}
+          end
 
     in
         case (closest_hit root ) of
