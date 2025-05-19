@@ -1,0 +1,2 @@
+structure Hittable = struct
+end;

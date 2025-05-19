@@ -20,6 +20,13 @@ structure Vec3 = struct
       z = #z v * s
     }
 
+  fun scaleV (v:t) (s:t) =
+    {
+      x = #x v * #x s,
+      y = #y v * #y s,
+      z = #z v * #z s
+    }
+
   fun divide (v:t) (d:real) =
     {
       x = #x v / d,
@@ -29,6 +36,9 @@ structure Vec3 = struct
 
   fun length (v:t) =
     Math.sqrt (#x v * #x v + #y v * #y v + #z v * #z v)
+
+  fun length_sq (v:t) =
+    (#x v * #x v + #y v * #y v + #z v * #z v)
 
   fun unit_vector (v:t) =
     scale v (1.0 / length v)

@@ -1,0 +1,8 @@
+Group is
+  $smlnj/basis/basis.cm
+  Type.sml
+  Vec3.sml
+  Ray.sml
+  Sphere.sml
+  Hittable_list.sml
+  Main.sml
