@@ -1,5 +1,6 @@
 Group is
   $smlnj/basis/basis.cm
+  $smlnj/Util/smlnj-lib.cm
   Type.sml
   Vec3.sml
   Interval.sml

@@ -31,6 +31,7 @@ structure Camera = struct
   val samples_per_pixel = 10;
   val max_depth = 10;
 
+  val rng = Common.rng;
 
   fun sample_square rng =
   let
@@ -41,20 +42,35 @@ structure Camera = struct
   end;
 
 
-  fun ray_color (ray:Ray.t) (world:Type.shape) = 
+  fun ray_color _ _ 0 = Color.create(0.0,0.0,0.0)
+    | ray_color (ray:Ray.t) (world:Type.shape) (depth)= 
   let 
     
     val recode = Hittable_list.hit_shape world ray (0.001,1000.0);
 
     fun recode2col (recode: Type.hit_record) =
       case recode of 
-          Type.NoHit => Color.create(0.0,0.0,0.0)
+          Type.NoHit => 
+          let
+            val ray_dir = (#dir ray);
+            val a = 0.5 * (#y ray_dir + 1.0)
+
+            val col = Vec3.add (Vec3.scale (Color.create(1.0,1.0,1.0)) (1.0 - a))  (Vec3.scale
+            (Color.create(0.5,0.7,1.0)) a)
+          in
+            col
+          end
         | Type.Hit hit =>
             let
-              val n = #normal hit
+              val mat = #mat hit
+              val hit = Type.Hit hit
+              val (ray_r,col) = 
+                case mat of
+                     Type.LambertianT m => Lambertian.scatter (Type.LambertianT m) ray hit
+                   | Type.MetalT m => Metal.scatter (Type.MetalT m) ray hit
+
             in
-              Vec3.scale (Color.create(((#x n)+1.0), ((#y n)+1.0), ((#z
-              n)+1.0))) 0.5
+              Vec3.scaleV col (ray_color ray_r world (depth-1))
             end
   in
       recode2col recode
@@ -63,7 +79,6 @@ structure Camera = struct
 
   fun get_ray (i,j)=
   let
-    val rng = Random.rand (42, 17) 
     val offset =  sample_square rng
 
     val x_base = Real.fromInt i + (#x offset);
@@ -96,12 +111,14 @@ structure Camera = struct
       val _ =
         List.app (fn j =>
           let 
-            val _ = print("\rScanlines remaining:" ^ Int.toString (image_height - j) )
+            val _ = print("\rScanlines remaining:" ^ Int.toString (image_height
+            - j) ^ "   ")
           in
             List.app (fn i =>
               let
                 val col = foldr (fn (_, acc) => 
-                                  Vec3.add (ray_color (get_ray (i, j)) world) acc)
+                                  Vec3.add (ray_color (get_ray (i, j)) world
+                                  max_depth) acc)
                                 Vec3.zero
                                 (List.tabulate (samples_per_pixel, fn _ => ()))
                 (*val col = get_ray  (i,j);*)

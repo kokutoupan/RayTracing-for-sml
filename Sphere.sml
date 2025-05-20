@@ -2,8 +2,8 @@ structure Sphere = struct
   open Type;
   type t = sphere;
 
-  fun create (center: Vec3.t) (radius: real) = SphereT {center = center, radius =
-    radius}
+  fun create (center: Vec3.t) (radius: real) (mat:Type.material)= SphereT {center = center, radius =
+    radius, mat = mat}
 
   fun hit (sphere: t) (ray: Ray.t) (t_ren:Interval.t):hit_record =
   let
@@ -16,7 +16,7 @@ structure Sphere = struct
 
     val discriminant = h*h - a*c
   in
-    if (discriminant) < 0.00000000001 then NoHit else
+    if (discriminant) < 1.0e~8 then NoHit else
     let
       val sqrtd = Math.sqrt discriminant;
       val root = (h - sqrtd) / a;
@@ -30,8 +30,9 @@ structure Sphere = struct
             val p = Ray.at ray root;
             val outward_normal = Vec3.divide (Vec3.sub p (#center sphere)) (#radius sphere);
             val (f,n) = Hittable.face_normal ray outward_normal
+            val mat = (#mat sphere)
           in
-            Hit { p = p, normal = n, t = root, front_face = f}
+            Hit { p = p, normal = n, t = root, front_face = f, mat=mat }
           end
 
     in

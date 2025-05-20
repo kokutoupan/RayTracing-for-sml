@@ -74,7 +74,10 @@ structure Vec3 = struct
   in
     if(1.0e~160 < l andalso l <= 1.0) then divide p (Math.sqrt l) else
       random_unit_vector rng
-  end;    
+  end;
+
+  fun reflect (v:t) (n:t) = 
+    sub v (scale n (2.0 * dot v n))
 
 end;
 
@@ -84,9 +87,9 @@ structure Color = struct
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
   fun write_color (out:TextIO.outstream) (color:t) =
   let 
-    val r = #x color
-    val g = #y color
-    val b = #z color
+    val r = Math.sqrt (#x color)
+    val g = Math.sqrt (#y color)
+    val b = Math.sqrt (#z color)
 
     val intensity = Interval.clamp (0.0,1.0)
 
