@@ -7,7 +7,8 @@ structure Type = struct
     mat: material
   }
   and material = LambertianT of {albedo: Color.t}
-              |  MetalT of {albedo: Color.t}
+               | MetalT of {albedo: Color.t,fuzz: real}
+               | DielectricT of {ref_idx: real}
 
   type sphere = {center: Vec3.t, radius: real, mat:material};
 

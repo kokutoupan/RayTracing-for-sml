@@ -2,36 +2,65 @@ structure Camera = struct
   val aspect_ratio = 16.0 / 9.0;
   val image_width = 400;
   val image_height = Real.toInt IEEEReal.TO_NEAREST (Real.fromInt image_width / aspect_ratio);
-  
-  val viewport_height = 2.0;
-  val viewport_width = (Real.fromInt image_width) / (Real.fromInt image_height) * viewport_height;
-
-  (*camera*)
-
-  val focal_length = 1.0;
-  val camera_center = Vec3.create(0.0,0.0,0.0);
-
-  val viewport_u = Vec3.create(viewport_width,0.0,0.0);
-  val viewport_v = Vec3.create(0.0,~viewport_height,0.0);
-
-  val pixel_delta_u = Vec3.divide viewport_u (Real.fromInt image_width);
-  val pixel_delta_v = Vec3.divide viewport_v (Real.fromInt image_height);
-
-  val viewport_upper_left = Vec3.sub ( 
-    Vec3.sub (Vec3.sub 
-    camera_center (Vec3.create(0.0,0.0,focal_length))
-    )
-      (Vec3.divide  viewport_u 2.0)) 
-      (Vec3.divide viewport_v 2.0);
-
-  val pixel00_loc = Vec3.add viewport_upper_left  (Vec3.scale (Vec3.add
-  pixel_delta_u pixel_delta_v) 0.5);
-  
 
   val samples_per_pixel = 10;
   val max_depth = 10;
 
+  val vfov = 20.0;
+
+  val lookfrom = Vec3.create(~2.0,2.0,1.0);
+  val lookat = Vec3.create(0.0,0.0,~1.0);
+  val vup = Vec3.create(0.0,1.0,0.0);
+
+  val defocus_angle = 10.0;
+  val focus_dist = 3.4;
+
+  (*setting end*)
+
+  val camera_center = lookfrom;
+  val h = Math.tan( (Common.degrees_to_radians vfov) / 2.0 ) ;
+
+  val viewport_height = 2.0 * h * focus_dist;
+  val viewport_width = (Real.fromInt image_width) / (Real.fromInt image_height) * viewport_height;
+
+  val w = Vec3.unit_vector (Vec3.sub lookfrom lookat);
+  val u = Vec3.unit_vector (Vec3.cross vup w);
+  val v = Vec3.cross w u;
+
+  val viewport_u = Vec3.scale u viewport_width
+  val viewport_v = Vec3.scale (Vec3.neg v) viewport_height
+
+  val pixel_delta_u = Vec3.divide viewport_u (Real.fromInt image_width);
+  val pixel_delta_v = Vec3.divide viewport_v (Real.fromInt image_height);
+
+  val viewport_upper_left =
+    Vec3.sub
+      (Vec3.sub
+        (Vec3.sub camera_center (Vec3.scale w focus_dist))
+        (Vec3.divide viewport_u 2.0))
+      (Vec3.divide viewport_v 2.0)
+  
+
+  val pixel00_loc = Vec3.add viewport_upper_left  (Vec3.scale (Vec3.add
+  pixel_delta_u pixel_delta_v) 0.5);
+
+  val defocus_radius = focus_dist * (Math.tan 
+  (Common.degrees_to_radians (defocus_angle/2.0)));
+  val defocus_disk_u = Vec3.scale u defocus_radius;
+  val defocus_disk_v = Vec3.scale v defocus_radius;
+  
   val rng = Common.rng;
+    
+  fun defocus_disk_sample center rng =
+      let 
+        val p = Vec3.random_unit_vector rng
+      in
+        Vec3.add center 
+        (Vec3.add 
+        (Vec3.scale defocus_disk_u (#x p)) 
+        (Vec3.scale defocus_disk_v (#y p)))
+      end
+
 
   fun sample_square rng =
   let
@@ -68,6 +97,7 @@ structure Camera = struct
                 case mat of
                      Type.LambertianT m => Lambertian.scatter (Type.LambertianT m) ray hit
                    | Type.MetalT m => Metal.scatter (Type.MetalT m) ray hit
+                   | Type.DielectricT m => Dielectric.scatter (Type.DielectricT m) ray hit
 
             in
               Vec3.scaleV col (ray_color ray_r world (depth-1))
@@ -81,18 +111,21 @@ structure Camera = struct
   let
     val offset =  sample_square rng
 
-    val x_base = Real.fromInt i + (#x offset);
-    val y_base = Real.fromInt j + (#y offset);
-    val sV = Vec3.create(x_base, y_base, 0.0);
+    val u = Real.fromInt i + (#x offset);
+    val v = Real.fromInt j + (#y offset);
+    val pixel_sample =
+          Vec3.add pixel00_loc
+            (Vec3.add
+              (Vec3.scale pixel_delta_u u)
+              (Vec3.scale pixel_delta_v v))
+    
+    val ray_orig = if defocus_angle > 0.0 
+                   then defocus_disk_sample camera_center rng 
+                   else camera_center
 
-    val pixel_sample = Vec3.add pixel00_loc (Vec3.scaleV (Vec3.add
-    pixel_delta_u pixel_delta_v) sV);
+    val ray_dir = Vec3.sub pixel_sample ray_orig
 
-  
-
-    val ray_dir = Vec3.sub pixel_sample camera_center;
-
-    val ray = Ray.create camera_center (Vec3.unit_vector ray_dir)
+    val ray = Ray.create ray_orig (Vec3.unit_vector ray_dir)
   in 
     (ray)
   end;

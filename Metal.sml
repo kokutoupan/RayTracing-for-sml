@@ -1,13 +1,16 @@
 structure Metal = struct
-  type t = { albedo: Color.t }
+  type t = { albedo: Color.t ,fuzz:real}
 
-  fun create (color: Color.t) =
-    Type.MetalT { albedo = color }
+  fun create (color: Color.t) fuzz =
+    Type.MetalT { albedo = color ,fuzz = fuzz}
 
-  fun scatter (Type.MetalT {albedo}) (ray: Ray.t) (Type.Hit {p, normal, ...}) =
+  fun scatter (Type.MetalT {albedo,fuzz}) (ray: Ray.t) (Type.Hit {p, normal, ...}) =
     let
       val reflect = Vec3.reflect (#dir ray) normal
-      val scattered_ray = Ray.create p reflect
+      val reflectFuzz = Vec3.add (Vec3.unit_vector reflect) (Vec3.scale
+      (Vec3.random_unit_vector Common.rng) fuzz)
+       
+      val scattered_ray = Ray.create p reflectFuzz
     in
       (scattered_ray, albedo)
     end

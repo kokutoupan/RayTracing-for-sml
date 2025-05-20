@@ -7,6 +7,13 @@ structure Vec3 = struct
 
   val zero = {x = 0.0, y = 0.0, z = 0.0}
 
+  fun neg (v:t) = 
+    {
+      x = #x v * (~1.0),
+      y = #y v * (~1.0),
+      z = #z v * (~1.0)
+    }
+
   fun add (v1:t) (v2:t) =
     { x = #x v1 + #x v2,
       y = #y v1 + #y v2,
@@ -78,6 +85,17 @@ structure Vec3 = struct
 
   fun reflect (v:t) (n:t) = 
     sub v (scale n (2.0 * dot v n))
+
+  fun refract (uv:t) (n:t) (eta_ratio:real) =
+  let
+    val cos_theta = Common.realMin (dot (neg uv) n) 1.0
+    val r_out_perp = scale (add uv (scale n cos_theta)) eta_ratio
+    val r_out_parallel = scale n (Math.sqrt (Real.abs(1.0 - length_sq
+    r_out_perp)) * ~1.0)
+  in
+    add r_out_perp r_out_parallel
+  end;
+
 
 end;
 
