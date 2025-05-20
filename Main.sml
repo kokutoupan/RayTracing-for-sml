@@ -10,13 +10,12 @@ use "Camera.sml";
 structure Main = struct 
 
   (*objects*)
-  val sq = Sphere.create (Vec3.create(0.0, 0.0, ~1.0))  0.5;
+  val sq = Sphere.create (Vec3.create(0.0, 0.0, ~2.0))  0.5;
   val sq2 = Sphere.create (Vec3.create(0.0, ~100.5, ~1.0))  100.0;
   val wd_obj = Type.Hittable_listT [sq,sq2];
 
   val output = "output.ppm";
 
-  fun render output= 
-    Camera.render output wd_obj
+  val render = Camera.render wd_obj
     
 end;

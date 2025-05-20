@@ -29,12 +29,22 @@ structure Camera = struct
   
 
   val samples_per_pixel = 10;
+  val max_depth = 10;
+
+
+  fun sample_square rng =
+  let
+    val x = Random.randReal rng;
+    val y = Random.randReal rng;
+  in
+    Vec3.create (x - 0.5,y - 0.5, 0.0)
+  end;
 
 
   fun ray_color (ray:Ray.t) (world:Type.shape) = 
   let 
     
-    val recode = Hittable_list.hit_shape world ray (0.0,100000.0);
+    val recode = Hittable_list.hit_shape world ray (0.001,1000.0);
 
     fun recode2col (recode: Type.hit_record) =
       case recode of 
@@ -51,26 +61,30 @@ structure Camera = struct
   end;
 
 
-  fun get_ray world (i,j)=
+  fun get_ray (i,j)=
   let
-    val pixel_center = Vec3.add pixel00_loc (Vec3.scaleV (Vec3.add
-    pixel_delta_u pixel_delta_v) (Vec3.create(Real.fromInt i, Real.fromInt j,
-    0.0)));
+    val rng = Random.rand (42, 17) 
+    val offset =  sample_square rng
 
-    val ray_dir = Vec3.sub pixel_center camera_center;
+    val x_base = Real.fromInt i + (#x offset);
+    val y_base = Real.fromInt j + (#y offset);
+    val sV = Vec3.create(x_base, y_base, 0.0);
 
-    val ray = Ray.create camera_center (Vec3.unit_vector ray_dir);
+    val pixel_sample = Vec3.add pixel00_loc (Vec3.scaleV (Vec3.add
+    pixel_delta_u pixel_delta_v) sV);
 
-    (*val col = ray_color ray;*)
-    val col = ray_color ray world
+  
+
+    val ray_dir = Vec3.sub pixel_sample camera_center;
+
+    val ray = Ray.create camera_center (Vec3.unit_vector ray_dir)
   in 
-    col
+    (ray)
   end;
 
-    fun render filename (world:Type.shape)=
+    fun render (world:Type.shape)  filename=
     let
       
-      val get_ray = get_ray world
 
       val out = TextIO.openOut filename
 
@@ -86,10 +100,10 @@ structure Camera = struct
           in
             List.app (fn i =>
               let
-
-                val col = foldr (fn (_, acc) => Vec3.add (get_ray(i, j))  acc)
-                          Vec3.zero
-                          (List.tabulate (samples_per_pixel, fn _ => ()))
+                val col = foldr (fn (_, acc) => 
+                                  Vec3.add (ray_color (get_ray (i, j)) world) acc)
+                                Vec3.zero
+                                (List.tabulate (samples_per_pixel, fn _ => ()))
                 (*val col = get_ray  (i,j);*)
                 val _ = Color.write_color out (Vec3.divide col (Real.fromInt
                 samples_per_pixel))

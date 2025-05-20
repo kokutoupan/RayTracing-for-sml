@@ -1,6 +1,8 @@
 structure Vec3 = struct
   type t = {x: real, y: real, z: real}
 
+  val rng = Random.rand (21, 2107)
+
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
 
   val zero = {x = 0.0, y = 0.0, z = 0.0}
@@ -55,6 +57,25 @@ structure Vec3 = struct
       y = #z v1 * #x v2 - #x v1 * #z v2,
       z = #x v1 * #y v2 - #y v1 * #x v2
     }
+
+  fun random_vector rng=
+  let 
+    val x = Random.randReal rng
+    val y = Random.randReal rng
+    val z = Random.randReal rng
+  in
+    create(x,y,z)
+  end;
+
+  fun random_unit_vector rng=
+  let 
+    val p = random_vector rng
+    val l = length_sq p
+  in
+    if(1.0e~160 < l andalso l <= 1.0) then divide p (Math.sqrt l) else
+      random_unit_vector rng
+  end;    
+
 end;
 
 structure Color = struct

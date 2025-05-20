@@ -9,13 +9,14 @@ structure Sphere = struct
   let
     val oc = Vec3.sub (#center sphere) (#orig ray);
 
-    val a = Vec3.length_sq (#dir ray);
-    val h = Vec3.dot (#dir ray) oc;
+    val dir = (#dir ray);
+    val a = Vec3.length_sq dir;
+    val h = Vec3.dot dir oc;
     val c =  Vec3.length_sq oc - (#radius sphere) * (#radius sphere);
 
     val discriminant = h*h - a*c
   in
-    if (discriminant) < 0.0 then NoHit else
+    if (discriminant) < 0.00000000001 then NoHit else
     let
       val sqrtd = Math.sqrt discriminant;
       val root = (h - sqrtd) / a;
