@@ -1,7 +1,6 @@
 structure Vec3 = struct
   type t = {x: real, y: real, z: real}
 
-  val rng = Random.rand (21, 2107)
 
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
 
@@ -65,22 +64,22 @@ structure Vec3 = struct
       z = #x v1 * #y v2 - #y v1 * #x v2
     }
 
-  fun random_vector rng=
+  fun random_vector ()=
   let 
-    val x = Random.randReal rng
-    val y = Random.randReal rng
-    val z = Random.randReal rng
+    val x = randReal ()
+    val y = randReal ()
+    val z = randReal ()
   in
     create(x,y,z)
   end;
 
-  fun random_unit_vector rng=
+  fun random_unit_vector ()=
   let 
-    val p = random_vector rng
+    val p = random_vector ()
     val l = length_sq p
   in
     if(1.0e~160 < l andalso l <= 1.0) then divide p (Math.sqrt l) else
-      random_unit_vector rng
+      random_unit_vector ()
   end;
 
   fun reflect (v:t) (n:t) = 
@@ -103,6 +102,11 @@ structure Color = struct
   type t = Vec3.t
   
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
+
+
+  val random_color = Vec3.random_vector
+
+
   fun write_color (out:TextIO.outstream) (color:t) =
   let 
     val r = Math.sqrt (#x color)

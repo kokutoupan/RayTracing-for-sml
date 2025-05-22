@@ -4,10 +4,9 @@ structure Lambertian = struct
   fun create (color: Color.t) =
     Type.LambertianT { albedo = color }
 
-  fun scatter (Type.LambertianT {albedo}) (_: Ray.t) (Type.Hit {p, normal, ...}) =
+  fun scatter ({albedo}:t) (_: Ray.t) (Type.Hit {p, normal, ...}) =
     let
-      val rng = Common.rng
-      val target = Vec3.add normal (Vec3.random_unit_vector rng)
+      val target = Vec3.add normal (Vec3.random_unit_vector ())
       val scattered_ray = Ray.create p target
     in
       (scattered_ray, albedo)

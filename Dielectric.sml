@@ -4,7 +4,7 @@ structure Dielectric = struct
   fun create (ref_idx: real) =
     Type.DielectricT {ref_idx = ref_idx}
 
-  fun scatter (Type.DielectricT {ref_idx}) (ray: Ray.t) 
+  fun scatter ({ref_idx}:t) (ray: Ray.t) 
     (Type.Hit {p,normal,t,front_face,...}) =
     let
       fun reflectance cos_theta ref_idx =
@@ -26,7 +26,7 @@ structure Dielectric = struct
       val cannot_refract = rif_ratio * sin_theta > 1.0
 
       val r_dir = if cannot_refract orelse 
-      reflectance cos_theta ref_idx > Random.randReal Common.rng
+      reflectance cos_theta ref_idx > randReal ()
                       then
                         Vec3.reflect dir normal
                       else Vec3.refract dir normal rif_ratio

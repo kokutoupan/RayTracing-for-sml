@@ -1,19 +1,19 @@
 structure Camera = struct
   val aspect_ratio = 16.0 / 9.0;
-  val image_width = 400;
+  val image_width = 200;
   val image_height = Real.toInt IEEEReal.TO_NEAREST (Real.fromInt image_width / aspect_ratio);
 
-  val samples_per_pixel = 10;
+  val samples_per_pixel = 100;
   val max_depth = 10;
 
   val vfov = 20.0;
 
-  val lookfrom = Vec3.create(~2.0,2.0,1.0);
-  val lookat = Vec3.create(0.0,0.0,~1.0);
+  val lookfrom = Vec3.create(13.0,2.0,3.0);
+  val lookat = Vec3.create(0.0,0.0,0.0);
   val vup = Vec3.create(0.0,1.0,0.0);
 
-  val defocus_angle = 10.0;
-  val focus_dist = 3.4;
+  val defocus_angle = 0.6;
+  val focus_dist = 10.0;
 
   (*setting end*)
 
@@ -49,11 +49,10 @@ structure Camera = struct
   val defocus_disk_u = Vec3.scale u defocus_radius;
   val defocus_disk_v = Vec3.scale v defocus_radius;
   
-  val rng = Common.rng;
     
-  fun defocus_disk_sample center rng =
+  fun defocus_disk_sample center ()=
       let 
-        val p = Vec3.random_unit_vector rng
+        val p = Vec3.random_unit_vector ()
       in
         Vec3.add center 
         (Vec3.add 
@@ -62,10 +61,10 @@ structure Camera = struct
       end
 
 
-  fun sample_square rng =
+  fun sample_square () =
   let
-    val x = Random.randReal rng;
-    val y = Random.randReal rng;
+    val x = randReal ();
+    val y = randReal ();
   in
     Vec3.create (x - 0.5,y - 0.5, 0.0)
   end;
@@ -95,9 +94,9 @@ structure Camera = struct
               val hit = Type.Hit hit
               val (ray_r,col) = 
                 case mat of
-                     Type.LambertianT m => Lambertian.scatter (Type.LambertianT m) ray hit
-                   | Type.MetalT m => Metal.scatter (Type.MetalT m) ray hit
-                   | Type.DielectricT m => Dielectric.scatter (Type.DielectricT m) ray hit
+                     Type.LambertianT m => Lambertian.scatter m ray hit
+                   | Type.MetalT m => Metal.scatter m ray hit
+                   | Type.DielectricT m => Dielectric.scatter m ray hit
 
             in
               Vec3.scaleV col (ray_color ray_r world (depth-1))
@@ -109,7 +108,7 @@ structure Camera = struct
 
   fun get_ray (i,j)=
   let
-    val offset =  sample_square rng
+    val offset =  sample_square ()
 
     val u = Real.fromInt i + (#x offset);
     val v = Real.fromInt j + (#y offset);
@@ -120,7 +119,7 @@ structure Camera = struct
               (Vec3.scale pixel_delta_v v))
     
     val ray_orig = if defocus_angle > 0.0 
-                   then defocus_disk_sample camera_center rng 
+                   then defocus_disk_sample camera_center () 
                    else camera_center
 
     val ray_dir = Vec3.sub pixel_sample ray_orig
