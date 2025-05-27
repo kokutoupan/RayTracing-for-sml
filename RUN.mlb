@@ -1,11 +1,14 @@
 (* Common utilities *)
 $(SML_LIB)/basis/basis.mlb
+
+ListMergeSort.sml
 MyRandom.sml
 Common.sml
 Interval.sml
 Vec3.sml
-Type.sml
 Ray.sml
+AABB.sml
+Type.sml
 Hittable.sml
 
 (* Material *)
@@ -15,7 +18,7 @@ Dielectric.sml
 
 (* Shape *)
 Sphere.sml
-Hittable_list.sml
+Hittables.sml
 
 (* Camera and Main *)
 Camera.sml

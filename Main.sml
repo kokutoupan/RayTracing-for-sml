@@ -58,6 +58,8 @@ structure Main = struct
 
   val mini_spheres = create_random_scene ();
 
+  val mini_bvh = Hittables.hbvh_build mini_spheres;
+
   val mat_ground = Lambertian.create (Vec3.create(0.5, 0.5, 0.5));
   val sphere_g = Sphere.create (Vec3.create(0.0, ~1000.0, 0.0))  1000.0 mat_ground;
 
@@ -70,26 +72,10 @@ structure Main = struct
   val material3 = Metal.create (Vec3.create(0.7, 0.6, 0.5)) 0.0;
   val sphere3 = Sphere.create (Vec3.create(4.0, 1.0, 0.0))  1.0 material3;
 
-  val world_spheres = sphere_g::sphere1::sphere2::sphere3::mini_spheres;
+  val world_spheres = sphere_g::sphere1::sphere2::sphere3::mini_bvh::[];
 
-  (*objects*)
-  (*
-  val mat_ground = Lambertian.create (Vec3.create(0.8, 0.8, 0.0));
-  val mat_center = Lambertian.create (Vec3.create(0.1, 0.2, 0.5));
-  val mat_left = Dielectric.create (1.5);
-  val mat_bubble = Dielectric.create (1.0/1.5);
-  val mat_right = Metal.create (Vec3.create(0.8, 0.8, 0.8)) 0.0;
-
-  val sphere_g = Sphere.create (Vec3.create(0.0, ~100.5, ~1.0))  100.0 mat_ground;
-  val sphere_c = Sphere.create (Vec3.create(~0.0, ~0.0, ~1.2))  0.5 mat_center;
-  val sphere_l = Sphere.create (Vec3.create(~1.0, ~0.0, ~1.0))  0.5 mat_left;
-  val sphere_b = Sphere.create (Vec3.create(~1.0, ~0.0, ~1.0))  0.4 mat_bubble;
-  val sphere_r = Sphere.create (Vec3.create(1.0, ~0.0, ~1.0))  0.5 mat_right;
-  *)
-  
-  (*val wd_obj = Type.Hittable_listT [sphere_g, sphere_c, sphere_l, sphere_b, sphere_r];
-    *)
-  val wd_obj = Type.Hittable_listT  world_spheres;
+  val wd_obj = Type.Hittable_listT (Hittables.hlst_create_list
+  world_spheres);
   val output = "test.ppm";
 
   fun render output = 
