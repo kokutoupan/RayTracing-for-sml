@@ -1,5 +1,4 @@
 structure Ray = struct
-  (*TODO*)
   type t = {orig: Vec3.t, dir: Vec3.t}
 
   fun create (orig: Vec3.t) (dir: Vec3.t) = {orig = orig, dir =(Vec3.unit_vector

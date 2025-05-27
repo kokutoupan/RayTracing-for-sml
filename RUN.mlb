@@ -1,11 +1,13 @@
 (* Common utilities *)
 $(SML_LIB)/basis/basis.mlb
+
 MyRandom.sml
 Common.sml
 Interval.sml
 Vec3.sml
-Type.sml
 Ray.sml
+AABB.sml
+Type.sml
 Hittable.sml
 
 (* Material *)

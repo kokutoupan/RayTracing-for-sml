@@ -89,7 +89,8 @@ structure Main = struct
   
   (*val wd_obj = Type.Hittable_listT [sphere_g, sphere_c, sphere_l, sphere_b, sphere_r];
     *)
-  val wd_obj = Type.Hittable_listT  world_spheres;
+  val wd_obj = Type.Hittable_listT (Hittable_list.hlst_create_list
+  world_spheres);
   val output = "test.ppm";
 
   fun render output = 

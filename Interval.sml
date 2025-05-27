@@ -1,6 +1,12 @@
 structure Interval = struct
   type t = real * real;
 
+  fun create (min:t) (max:t) =
+    (min,max);
+
+  fun createIN ((a0,a1):t) ((b0,b1):t) =
+    (Common.min a0 b0, Common.max a1 b1);
+
   fun size (i:t) =
   let 
     val (min,max) = i
