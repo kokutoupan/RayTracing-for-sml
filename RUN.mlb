@@ -1,6 +1,7 @@
 (* Common utilities *)
 $(SML_LIB)/basis/basis.mlb
 
+ListMergeSort.sml
 MyRandom.sml
 Common.sml
 Interval.sml

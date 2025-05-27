@@ -70,4 +70,43 @@ structure Hittables = struct
     | hit_shape (Type.H_bvhT bvh) ray (t_min,t_max):Type.hit_record =
         hbvh_hit bvh ray (t_min,t_max)
 
+
+  fun hbvh_create (lhs:Type.shape) (rhs:Type.shape) =
+    {
+      lhs = lhs,
+      rhs = rhs,
+      bbox = AABB.createBB (Type.bbox_of_shape lhs) (Type.bbox_of_shape rhs)
+    }
+
+  fun hbvh_build (lst:Type.shape list):Type.shape =
+    if length lst <= 15 then
+      let 
+        val lst = hlst_create_list lst
+      in
+        Type.H_bvhT {
+          lhs = Type.Hittable_listT lst,
+          rhs = Type.NONE,
+          bbox = (#bbox lst)
+        }
+      end 
+    else
+      let
+        val hlst = hlst_create_list lst
+        val select_axis = AABB.longest_axis (#bbox hlst)
+
+        val comp = if select_axis = 0 then AABB.box_x_compare else if
+        select_axis = 1 then AABB.box_y_compare else AABB.box_z_compare
+
+        val bbox = (#bbox hlst)
+
+        val sorted_lst = ListMergeSort.sort (fn (h1,h2) => comp
+        (Type.bbox_of_shape h1,Type.bbox_of_shape h2)) lst
+      in
+        Type.H_bvhT {
+          lhs = hbvh_build (List.drop(sorted_lst,(length lst) div 2)),
+          rhs = hbvh_build (List.take(sorted_lst,(length lst) div 2)),
+          bbox = bbox
+        }
+      end
+
 end;

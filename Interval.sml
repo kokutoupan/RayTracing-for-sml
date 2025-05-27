@@ -32,4 +32,12 @@ structure Interval = struct
     if x < min then min else if x > max then max else x
 
 
+  fun print_interval ((a0,a1):t) =
+  let 
+    val _ = print(Int.toString (Real.toInt IEEEReal.TO_NEAREST (a0*100.0)) ^","
+    ^Int.toString (Real.toInt IEEEReal.TO_NEAREST (a1*100.0))^  " | ")
+  in
+    ()
+  end
+
 end;

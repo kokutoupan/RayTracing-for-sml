@@ -2,11 +2,12 @@ structure Sphere = struct
   open Type;
   type t = sphere;
 
-  fun create (center: Vec3.t) (radius: real) (mat:Type.material)= SphereT {center = center, radius =
-    radius, mat = mat, 
+  fun create (center: Vec3.t) (radius: real) (mat:Type.material)= 
+    SphereT {center = center, radius =radius, mat = mat, 
     bbox = 
-    AABB.createV (Vec3.sub center (Vec3.create(radius,
-    radius,radius))) (Vec3.add center (Vec3.create( radius,radius,radius)))};
+    AABB.createV 
+    (Vec3.sub center (Vec3.create(radius,radius,radius))) 
+    (Vec3.add center (Vec3.create( radius,radius,radius)))};
 
   fun hit (sphere: t) (ray: Ray.t) (t_ren:Interval.t):hit_record =
   let
