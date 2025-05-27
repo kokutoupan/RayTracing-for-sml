@@ -31,6 +31,9 @@ structure Interval = struct
   fun clamp ((min,max):t) (x:real) =
     if x < min then min else if x > max then max else x
 
+  fun center ((min,max):t) =
+    (max-min)/2.0 + min
+
 
   fun print_interval ((a0,a1):t) =
   let 

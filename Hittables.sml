@@ -2,6 +2,8 @@ structure Hittables = struct
   type hlst_t = Type.hittable_list;
   type hbvh_t = Type.h_bvh;
 
+  val Min_Leaf_size = 15
+
   fun hlst_empty ()  = {lst=[], bbox = AABB.createV
     (Vec3.create (~0.0, ~0.0 ,~0.0)) (Vec3.create (~0.0,~0.0,~0.0))}
 
@@ -21,7 +23,14 @@ structure Hittables = struct
   fun hlst_create_list (shapes:Type.shape list) =
     hlst_add_list (hlst_empty ()) shapes
 
-  
+local  
+  (* レイの方向ベクトルの特定の軸成分を取得するヘルパー関数 *)
+  fun get_ray_dir_component (ray_dir: Vec3.t, axis: Type.split_axis) : real =
+    case axis of
+        Type.X_Axis => #x ray_dir
+      | Type.Y_Axis => #y ray_dir
+      | Type.Z_Axis => #z ray_dir
+in
   fun hlst_hit ({lst=[],...}: hlst_t) (_: Ray.t) (_: Interval.t) :Type.hit_record = Type.NoHit
     | hlst_hit ({lst=lst,...}: hlst_t) (ray: Ray.t) ((ray_t_min, ray_t_max):Interval.t):(Type.hit_record) =
       let
@@ -48,17 +57,30 @@ structure Hittables = struct
         val lhs = #lhs hbvh
         val rhs = #rhs hbvh
 
-        val lhs_hitrec = hit_shape lhs ray (t_min,t_max)
 
-        val rhs_hitrec =
-          case lhs_hitrec of
-              Type.NoHit => hit_shape rhs ray (t_min,t_max)
-            | Type.Hit r => hit_shape rhs ray (t_min,(#t r))
+        val (first_child_to_test ,second_child_to_test) =
+          case #axis_opt hbvh of
+              NONE => (lhs,rhs)
+            |SOME axis => 
+                let 
+                  val ray_dir_comp = get_ray_dir_component ((#dir ray), axis)
+                in
+                  if ray_dir_comp > 0.0
+                  then (lhs,rhs)
+                  else (rhs,lhs)
+                end
+
+        val hit_rec1 = hit_shape first_child_to_test ray (t_min, t_max) (* hit_shapeはshapeを扱う関数 *)
+        val t_max_updated =
+            case hit_rec1 of
+                Type.NoHit => t_max
+              | Type.Hit r => #t r
+        val hit_rec2 = hit_shape second_child_to_test ray (t_min, t_max_updated)
 
       in
-        case rhs_hitrec of
-             Type.NoHit => lhs_hitrec
-           | _ => rhs_hitrec
+        case hit_rec2 of
+             Type.NoHit => hit_rec1
+           | _ => hit_rec2
       end
     else Type.NoHit
 
@@ -69,7 +91,7 @@ structure Hittables = struct
         hlst_hit lst ray (t_min,t_max)
     | hit_shape (Type.H_bvhT bvh) ray (t_min,t_max):Type.hit_record =
         hbvh_hit bvh ray (t_min,t_max)
-
+end
 
   fun hbvh_create (lhs:Type.shape) (rhs:Type.shape) =
     {
@@ -79,14 +101,15 @@ structure Hittables = struct
     }
 
   fun hbvh_build (lst:Type.shape list):Type.shape =
-    if length lst <= 15 then
+    if length lst <= Min_Leaf_size then
       let 
         val lst = hlst_create_list lst
       in
         Type.H_bvhT {
           lhs = Type.Hittable_listT lst,
           rhs = Type.NONE,
-          bbox = (#bbox lst)
+          bbox = (#bbox lst),
+          axis_opt = NONE
         }
       end 
     else
@@ -94,10 +117,11 @@ structure Hittables = struct
         val hlst = hlst_create_list lst
         val select_axis = AABB.longest_axis (#bbox hlst)
 
-        val comp = if select_axis = 0 then AABB.box_x_compare else if
-        select_axis = 1 then AABB.box_y_compare else AABB.box_z_compare
-
+        (*val comp = AABB.box_min_cmp select_axis*)
+        val comp = AABB.box_center_cmp select_axis
         val bbox = (#bbox hlst)
+
+        val _ = AABB.print_aabb (#bbox hlst)
 
         val sorted_lst = ListMergeSort.sort (fn (h1,h2) => comp
         (Type.bbox_of_shape h1,Type.bbox_of_shape h2)) lst
@@ -105,7 +129,11 @@ structure Hittables = struct
         Type.H_bvhT {
           lhs = hbvh_build (List.drop(sorted_lst,(length lst) div 2)),
           rhs = hbvh_build (List.take(sorted_lst,(length lst) div 2)),
-          bbox = bbox
+          bbox = bbox,
+          axis_opt =SOME (if select_axis = 0 then Type.X_Axis 
+                     else if select_axis = 1
+                      then Type.Y_Axis
+                      else Type.Z_Axis)
         }
       end
 

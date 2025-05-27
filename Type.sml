@@ -10,15 +10,22 @@ structure Type = struct
                | MetalT of {albedo: Color.t,fuzz: real}
                | DielectricT of {ref_idx: real}
 
+  datatype split_axis =
+    X_Axis
+  | Y_Axis
+  | Z_Axis
+
   type sphere = {center: Vec3.t, radius: real, mat:material, bbox:AABB.t};
 
   datatype shape = Hittable_listT of {lst:shape list,bbox:AABB.t}
                  | SphereT of sphere
-                 | H_bvhT of {lhs:shape,rhs:shape,bbox:AABB.t}
+                 | H_bvhT of
+                      {lhs:shape,rhs:shape,bbox:AABB.t,axis_opt:split_axis
+                      option}
                  | NONE; (*dumy*)
 
   type hittable_list = {lst:shape list,bbox:AABB.t};
-  type h_bvh = {lhs:shape,rhs:shape,bbox:AABB.t};
+  type h_bvh = {lhs:shape,rhs:shape,bbox:AABB.t,axis_opt:split_axis option};
 
 
   (* shape から bbox を抽出するヘルパー関数 *)

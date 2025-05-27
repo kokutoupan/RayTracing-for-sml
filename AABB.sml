@@ -117,35 +117,26 @@ fun is_hit (aabb: {x:real*real, y:real*real, z:real*real}) (ray: Ray.t) (initial
     else 2
   end;
 
-  fun box_x_compare ((aabb1:t),(aabb2:t)) =
-  let
-    val a1x = axis_interval aabb1 0
-    val a2x = axis_interval aabb2 0
-    val ax = Interval.size a1x
-    val ay = Interval.size a2x
+  fun box_min_cmp axis ((aabb1:t),(aabb2:t)) =
+  let 
+    val (minX,_) = axis_interval aabb1 axis
+    val (minY,_) = axis_interval aabb2 axis
   in
-    if ax < ay then false else true
+    minX <= minY
   end
 
-  fun box_y_compare ((aabb1:t),(aabb2:t)) =
-  let
-    val a1y = axis_interval aabb1 1
-    val a2y = axis_interval aabb2 1
-    val ax = Interval.size a1y
-    val ay = Interval.size a2y
+  fun box_center_cmp axis ((aabb1:t),(aabb2:t)) =
+  let 
+    val a1 = axis_interval aabb1 axis
+    val a2 = axis_interval aabb2 axis
+
+    val a1c = Interval.center a1
+    val a2c = Interval.center a2
   in
-    if ax < ay then false else true
+    a1c <= a2c
   end
 
-  fun box_z_compare ((aabb1:t),(aabb2:t)) =
-  let
-    val a1z = axis_interval aabb1 2
-    val a2z = axis_interval aabb2 2
-    val ax = Interval.size a1z
-    val ay = Interval.size a2z
-  in
-    if ax < ay then false else true
-  end
+
 
   fun print_aabb (aabb:t) =
   let
