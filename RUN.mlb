@@ -17,7 +17,7 @@ Dielectric.sml
 
 (* Shape *)
 Sphere.sml
-Hittable_list.sml
+Hittables.sml
 
 (* Camera and Main *)
 Camera.sml

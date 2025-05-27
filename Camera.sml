@@ -74,7 +74,7 @@ structure Camera = struct
     | ray_color (ray:Ray.t) (world:Type.shape) (depth)= 
   let 
     
-    val recode = Hittable_list.hit_shape world ray (0.001,1000.0);
+    val recode = Hittables.hit_shape world ray (0.001,1000.0);
 
     fun recode2col (recode: Type.hit_record) =
       case recode of 

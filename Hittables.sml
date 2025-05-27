@@ -1,17 +1,17 @@
-structure Hittable_list = struct
-  (*open Type;*)
-  type t = Type.hittable_list;
+structure Hittables = struct 
+  type hlst_t = Type.hittable_list;
+  type hbvh_t = Type.h_bvh;
 
   fun hlst_empty ()  = {lst=[], bbox = AABB.createV
     (Vec3.create (~0.0, ~0.0 ,~0.0)) (Vec3.create (~0.0,~0.0,~0.0))}
 
-  fun hlst_add (hittable_list:t) (shape:Type.shape) =
+  fun hlst_add (hittable_list:hlst_t) (shape:Type.shape) =
     {
       lst = shape::(#lst hittable_list),
       bbox = AABB.createBB (#bbox hittable_list) (Type.bbox_of_shape shape)
     }
 
-  fun hlst_add_list (hittable_list:t) (shapes:Type.shape list) =
+  fun hlst_add_list (hittable_list:hlst_t) (shapes:Type.shape list) =
   let
     val lst = foldl (fn (shape,hlst) => hlst_add hlst shape) hittable_list shapes
   in
@@ -22,10 +22,9 @@ structure Hittable_list = struct
     hlst_add_list (hlst_empty ()) shapes
 
   
-  fun hit ({lst=[],...}: t) (_: Ray.t) (_: Interval.t) :Type.hit_record = Type.NoHit
-    | hit ({lst=lst,...}: t) (ray: Ray.t) ((ray_t_min, ray_t_max):Interval.t):(Type.hit_record) =
+  fun hlst_hit ({lst=[],...}: hlst_t) (_: Ray.t) (_: Interval.t) :Type.hit_record = Type.NoHit
+    | hlst_hit ({lst=lst,...}: hlst_t) (ray: Ray.t) ((ray_t_min, ray_t_max):Interval.t):(Type.hit_record) =
       let
-
         fun hit_list ([]:Type.shape list) (_: Ray.t) (_: Interval.t):Type.hit_record = Type.NoHit
           | hit_list ((h::hittable_list):Type.shape list) (ray: Ray.t) ((ray_t_min, ray_t_max):Interval.t):Type.hit_record =
           let
@@ -43,9 +42,32 @@ structure Hittable_list = struct
         hit_list lst ray (ray_t_min, ray_t_max)
       end
 
-  and hit_shape (Type.SphereT s) ray (t_min,t_max) :Type.hit_record =
+  and hbvh_hit (hbvh: hbvh_t) ray (t_min,t_max):Type.hit_record =
+    if AABB.is_hit (#bbox hbvh) ray (t_min,t_max) then
+      let 
+        val lhs = #lhs hbvh
+        val rhs = #rhs hbvh
+
+        val lhs_hitrec = hit_shape lhs ray (t_min,t_max)
+
+        val rhs_hitrec =
+          case lhs_hitrec of
+              Type.NoHit => hit_shape rhs ray (t_min,t_max)
+            | Type.Hit r => hit_shape rhs ray (t_min,(#t r))
+
+      in
+        case rhs_hitrec of
+             Type.NoHit => lhs_hitrec
+           | _ => rhs_hitrec
+      end
+    else Type.NoHit
+
+  and hit_shape (Type.NONE) _ _ = Type.NoHit
+    | hit_shape (Type.SphereT s) ray (t_min,t_max) :Type.hit_record =
         Sphere.hit s ray (t_min,t_max)
     | hit_shape (Type.Hittable_listT lst) ray (t_min,t_max):Type.hit_record =
-        hit lst ray (t_min,t_max)
+        hlst_hit lst ray (t_min,t_max)
+    | hit_shape (Type.H_bvhT bvh) ray (t_min,t_max):Type.hit_record =
+        hbvh_hit bvh ray (t_min,t_max)
 
-end; 
+end;

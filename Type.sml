@@ -13,9 +13,12 @@ structure Type = struct
   type sphere = {center: Vec3.t, radius: real, mat:material, bbox:AABB.t};
 
   datatype shape = Hittable_listT of {lst:shape list,bbox:AABB.t}
-                 | SphereT of sphere;
+                 | SphereT of sphere
+                 | H_bvhT of {lhs:shape,rhs:shape,bbox:AABB.t}
+                 | NONE; (*dumy*)
 
   type hittable_list = {lst:shape list,bbox:AABB.t};
+  type h_bvh = {lhs:shape,rhs:shape,bbox:AABB.t};
 
 
   (* shape から bbox を抽出するヘルパー関数 *)
@@ -23,6 +26,8 @@ structure Type = struct
     case s of
       Hittable_listT record => #bbox record  
     | SphereT sphere_record => #bbox sphere_record 
+    | H_bvhT record => #bbox record
+    | _ => raise Fail "don't allow none bbox_of_shape";
 
   fun get_hittable_list_payload (shape_value : shape) : hittable_list =
   case shape_value of

@@ -14,7 +14,7 @@ use "Dielectric.sml";
 
 (*Shape*)
 use "Sphere.sml";
-use "Hittable_list.sml";
+use "Hittables.sml";
 
 use "Camera.sml";
 use "Main.sml";
