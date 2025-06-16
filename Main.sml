@@ -29,7 +29,7 @@ structure Main = struct
                   let 
                     val albedo = Vec3.random_vector ()
                   in
-                    Lambertian.create albedo
+                    Lambertian.create albedo NONE
                   end
                 else if choose_mat < 0.95 then
                   let 
@@ -60,13 +60,14 @@ structure Main = struct
 
   val mini_bvh = Hittables.hbvh_build mini_spheres;
 
-  val mat_ground = Lambertian.create (Vec3.create(0.5, 0.5, 0.5));
+  val mat_ground = Lambertian.create (Vec3.create(0.5, 0.5, 0.5))
+  (SOME (Texture.checker_texture 0.5));
   val sphere_g = Sphere.create (Vec3.create(0.0, ~1000.0, 0.0))  1000.0 mat_ground;
 
   val material1 = Dielectric.create 1.5;
   val sphere1 = Sphere.create (Vec3.create(0.0, 1.0, 0.0))  1.0 material1;
 
-  val material2 = Lambertian.create (Vec3.create(0.4, 0.2, 0.1));
+  val material2 = Lambertian.create (Vec3.create(0.4, 0.2, 0.1)) NONE;
   val sphere2 = Sphere.create (Vec3.create(~4.0, 1.0, 0.0))  1.0 material2;
 
   val material3 = Metal.create (Vec3.create(0.7, 0.6, 0.5)) 0.0;
@@ -76,7 +77,7 @@ structure Main = struct
 
   val wd_obj = Type.Hittable_listT (Hittables.hlst_create_list
   world_spheres);
-  val output = "test.ppm";
+  val output = "out.ppm";
 
   fun render output = 
   let

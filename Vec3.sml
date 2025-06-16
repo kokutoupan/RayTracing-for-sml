@@ -103,6 +103,9 @@ structure Color = struct
   
   fun create (x:real, y:real, z:real) = {x = x, y = y, z = z}
 
+  val white = {x = 1.0, y = 1.0, z = 1.0};
+  val black = {x = 0.0, y = 0.0, z = 0.0};
+
 
   val random_color = Vec3.random_vector
 

@@ -9,6 +9,16 @@ structure Sphere = struct
     (Vec3.sub center (Vec3.create(radius,radius,radius))) 
     (Vec3.add center (Vec3.create( radius,radius,radius)))};
 
+
+  fun get_sphere_uv (sphere: t) (p: Vec3.t) =
+  let 
+    val theta = Math.acos (~(#y p));
+    val phi  =  Math.atan2(#z p, #x p) + Math.pi;
+  in
+    (phi/2.0/ Math.pi, theta / Math.pi)
+  end;
+
+
   fun hit (sphere: t) (ray: Ray.t) (t_ren:Interval.t):hit_record =
   let
     val oc = Vec3.sub (#center sphere) (#orig ray);
@@ -35,8 +45,9 @@ structure Sphere = struct
             val outward_normal = Vec3.divide (Vec3.sub p (#center sphere)) (#radius sphere);
             val (f,n) = Hittable.face_normal ray outward_normal
             val mat = (#mat sphere)
+            val (u,v) = get_sphere_uv sphere outward_normal
           in
-            Hit { p = p, normal = n, t = root, front_face = f, mat=mat }
+            Hit { p = p, normal = n, t = root,u=u,v=v, front_face = f, mat=mat }
           end
 
     in
@@ -45,4 +56,5 @@ structure Sphere = struct
            | Hit hit => Hit hit
     end
   end;
+
 end;

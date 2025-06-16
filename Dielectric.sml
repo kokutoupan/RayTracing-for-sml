@@ -1,10 +1,10 @@
 structure Dielectric = struct
-  type t = {ref_idx: real}
+  type t = Type.dielectric_t
 
   fun create (ref_idx: real) =
     Type.DielectricT {ref_idx = ref_idx}
 
-  fun scatter ({ref_idx}:t) (ray: Ray.t) 
+  fun scatter ({ref_idx,...}:t) (ray: Ray.t) 
     (Type.Hit {p,normal,t,front_face,...}) =
     let
       fun reflectance cos_theta ref_idx =

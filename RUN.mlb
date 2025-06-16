@@ -11,6 +11,8 @@ AABB.sml
 Type.sml
 Hittable.sml
 
+Texture.sml
+
 (* Material *)
 Lambertian.sml
 Metal.sml

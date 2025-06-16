@@ -3,7 +3,7 @@ structure Camera = struct
   val image_width = 200;
   val image_height = Real.toInt IEEEReal.TO_NEAREST (Real.fromInt image_width / aspect_ratio);
 
-  val samples_per_pixel = 100;
+  val samples_per_pixel = 50;
   val max_depth = 10;
 
   val vfov = 20.0;
