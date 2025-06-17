@@ -20,6 +20,7 @@ Dielectric.sml
 
 (* Shape *)
 Sphere.sml
+Quad.sml
 Hittables.sml
 
 (* Camera and Main *)

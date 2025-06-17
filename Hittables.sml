@@ -87,6 +87,8 @@ in
   and hit_shape (Type.NONE) _ _ = Type.NoHit
     | hit_shape (Type.SphereT s) ray (t_min,t_max) :Type.hit_record =
         Sphere.hit s ray (t_min,t_max)
+    | hit_shape (Type.QuadT q) ray (t_min,t_max):Type.hit_record =
+        Quad.hit q ray (t_min,t_max)
     | hit_shape (Type.Hittable_listT lst) ray (t_min,t_max):Type.hit_record =
         hlst_hit lst ray (t_min,t_max)
     | hit_shape (Type.H_bvhT bvh) ray (t_min,t_max):Type.hit_record =

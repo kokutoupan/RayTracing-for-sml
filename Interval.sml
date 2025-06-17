@@ -34,6 +34,9 @@ structure Interval = struct
   fun center ((min,max):t) =
     (max-min)/2.0 + min
 
+  fun expand (min,max) delta = 
+    (min-delta/2.0,max-delta/2.0)
+
 
   fun print_interval ((a0,a1):t) =
   let 

@@ -1,11 +1,17 @@
 structure AABB = struct
   type t = {x:Interval.t,y:Interval.t,z:Interval.t }
 
+  val pad_delta = 0.0001;
+
+  fun pading x =
+    if Interval.size x > pad_delta then x
+    else Interval.expand x pad_delta
+
   fun create (a:Interval.t) (b:Interval.t) (c:Interval.t) = 
     {
-      x = a,
-      y = b,
-      z = c
+      x = pading a,
+      y = pading b,
+      z = pading c
     }
 
   fun createV (a:Vec3.t) (b:Vec3.t)=
@@ -14,9 +20,9 @@ structure AABB = struct
       val {x=b0,y=b1,z=b2} = b
     in
       {
-        x = if a0 <= b0 then (a0,b0) else (b0,a0),
-        y = if a1 <= b1 then (a1,b1) else (b1,a1),
-        z = if a2 <= b2 then (a2,b2) else (b2,a2)
+        x = pading (if a0 <= b0 then (a0,b0) else (b0,a0)),
+        y = pading (if a1 <= b1 then (a1,b1) else (b1,a1)),
+        z = pading (if a2 <= b2 then (a2,b2) else (b2,a2))
       }
     end;
 

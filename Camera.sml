@@ -1,18 +1,18 @@
 structure Camera = struct
-  val aspect_ratio = 16.0 / 9.0;
+  val aspect_ratio = 1.0;
   val image_width = 200;
   val image_height = Real.toInt IEEEReal.TO_NEAREST (Real.fromInt image_width / aspect_ratio);
 
-  val samples_per_pixel = 50;
+  val samples_per_pixel = 30;
   val max_depth = 10;
 
-  val vfov = 20.0;
+  val vfov = 80.0;
 
-  val lookfrom = Vec3.create(13.0,2.0,3.0);
+  val lookfrom = Vec3.create(0.0,0.0,9.0);
   val lookat = Vec3.create(0.0,0.0,0.0);
   val vup = Vec3.create(0.0,1.0,0.0);
 
-  val defocus_angle = 0.6;
+  val defocus_angle = 0.0;
   val focus_dist = 10.0;
 
   (*setting end*)

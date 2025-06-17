@@ -25,9 +25,12 @@ structure Type = struct
   | Z_Axis
 
   type sphere = {center: Vec3.t, radius: real, mat:material, bbox:AABB.t};
+  type quad_t = {q:Vec3.t,u:Vec3.t,v:Vec3.t,w:Vec3.t, mat:material,bbox:AABB.t,
+  normal:Vec3.t, d:real};
 
   datatype shape = Hittable_listT of {lst:shape list,bbox:AABB.t}
                  | SphereT of sphere
+                 | QuadT of quad_t
                  | H_bvhT of
                       {lhs:shape,rhs:shape,bbox:AABB.t,axis_opt:split_axis
                       option}
@@ -42,8 +45,9 @@ structure Type = struct
     case s of
       Hittable_listT record => #bbox record  
     | SphereT sphere_record => #bbox sphere_record 
+    | QuadT record => #bbox record
     | H_bvhT record => #bbox record
-    | _ => raise Fail "don't allow none bbox_of_shape";
+    | NONE => raise Fail "don't allow none bbox_of_shape";
 
   fun get_hittable_list_payload (shape_value : shape) : hittable_list =
   case shape_value of
