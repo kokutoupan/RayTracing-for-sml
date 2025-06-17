@@ -77,8 +77,23 @@ structure Main = struct
 
     val wd_obj = Type.Hittable_listT (Hittables.hlst_create_list
     world_spheres);
+
+    val cam_settings = {
+      aspect_ratio = 16.0/9.0,
+      image_width = 600,
+      samples_per_pixel = 300,
+      max_depth = 50,
+      vfov = 20.0,
+      lookfrom = Vec3.create(13.0, 2.0, 3.0),
+      lookat = Vec3.create(0.0, 0.0, 0.0),
+      vup = Vec3.create(0.0, 1.0, 0.0),
+      defocus_angle = 0.6,
+      focus_dist = 10.0,
+      background_color = Color.white
+    }
+
   in
-    wd_obj
+    (cam_settings,wd_obj)
   end;
 
   fun quads () =
@@ -105,9 +120,25 @@ structure Main = struct
     val lowwer = Quad.create (Vec3.create(~2.0,~3.0,5.0))
     (Vec3.create(4.0,0.0,0.0)) (Vec3.create(0.0,0.0,~4.0)) lowwer_teal;
 
-  in
-    Type.Hittable_listT (Hittables.hlst_create_list [left, back, right, uppder,
+    val world = Type.Hittable_listT (Hittables.hlst_create_list [left, back, right, uppder,
     lowwer])
+
+    val cam_settings = {
+      aspect_ratio = 1.0,
+      image_width = 400,
+      samples_per_pixel = 100,
+      max_depth = 30,
+      vfov = 80.0,
+      lookfrom = Vec3.create(0.0, 0.0, 9.0),
+
+      lookat = Vec3.create(0.0, 0.0, 0.0),
+      vup = Vec3.create(0.0, 1.0, 0.0),
+      defocus_angle = 0.0,
+      focus_dist = 10.0,
+      background_color = Color.create(0.7, 0.8, 1.0)
+    }
+  in
+    (cam_settings,world)
   end;
 
   fun cornell_box () =
@@ -118,51 +149,56 @@ structure Main = struct
     val light = DiffuseLight.fromColor (Vec3.create(15.0, 15.0, 15.0));
 
     (* 左の壁 (x=555) *)
-    (* 修正: uとvを入れ替え、法線を内向き(-X)に *)
     val left = Quad.create (Vec3.create(555.0, 0.0, 0.0))
                            (Vec3.create(0.0, 0.0, 555.0))  (* vが先に *)
                            (Vec3.create(0.0, 555.0, 0.0))  (* uが後に *)
                            green;
 
     (* 右の壁 (x=0) *)
-    (* 変更なし: 元の定義で正しい *)
     val right = Quad.create (Vec3.create(0.0, 0.0, 0.0))
                             (Vec3.create(0.0, 555.0, 0.0))
                             (Vec3.create(0.0, 0.0, 555.0))
                             red;
 
     (* 光源 *)
-    (* 変更なし: 元の定義で正しい *)
     val light_source = Quad.create (Vec3.create(343.0, 554.0, 332.0))
                                    (Vec3.create(~130.0, 0.0, 0.0))
                                    (Vec3.create(0.0, 0.0, ~105.0))
                                    light;
-
     (* 床 (y=0) *)
-    (* 修正: uとvを入れ替え、法線を内向き(+Y)に *)
     val floor = Quad.create (Vec3.create(0.0, 0.0, 0.0))
                             (Vec3.create(0.0, 0.0, 555.0))  (* vが先に *)
                             (Vec3.create(555.0, 0.0, 0.0))  (* uが後に *)
                             white;
 
-    (* 天井 (y=555) *)
-    (* 変更なし: 元の定義で正しい *)
     val ceiling = Quad.create (Vec3.create(555.0, 555.0, 555.0))
                               (Vec3.create(~555.0, 0.0, 0.0))
                               (Vec3.create(0.0, 0.0, ~555.0))
                               white;
 
-    (* 奥の壁 (z=555) *)
-    (* 修正: uとvを入れ替え、法線を内向き(-Z)に *)
     val back_wall = Quad.create (Vec3.create(0.0, 0.0, 555.0))
                                 (Vec3.create(0.0, 555.0, 0.0))  (* vが先に *)
                                 (Vec3.create(555.0, 0.0, 0.0))  (* uが後に *)
                                 white;
 
+    val cam_settings = {
+      aspect_ratio = 1.0,
+      image_width = 800,
+      samples_per_pixel = 200,
+      max_depth = 50,
+      vfov = 40.0,
+      lookfrom = Vec3.create(278.0, 278.0, ~800.0),
+      lookat = Vec3.create(278.0, 278.0, 0.0),
+      vup = Vec3.create(0.0, 1.0, 0.0),
+      defocus_angle = 0.0,
+      focus_dist = 10.0,
+      background_color = Color.black
+    }
   
   in 
+    (cam_settings, 
     Type.Hittable_listT (Hittables.hlst_create_list [left, right, light_source,
-    floor, ceiling, back_wall])
+    floor, ceiling, back_wall]))
 
   end
     
@@ -171,12 +207,12 @@ structure Main = struct
   val output = "out.ppm";
 
   (*val wd_obj = many_spheres_stage ();*)
-  val wd_obj = cornell_box ();
+  val (cam_settings,wd_obj) = cornell_box ();
 
   fun render output = 
   let
     val start = Time.now ();
-    val _ = Camera.render wd_obj output
+    val _ = Camera.render cam_settings wd_obj output
     val finish = Time.now ();
     val duration = Time.- (finish,start)
   in

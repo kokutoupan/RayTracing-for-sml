@@ -112,11 +112,14 @@ structure Color = struct
 
   fun write_color (out:TextIO.outstream) (color:t) =
   let 
-    val r = Math.sqrt (#x color)
-    val g = Math.sqrt (#y color)
-    val b = Math.sqrt (#z color)
-
     val intensity = Interval.clamp (0.0,1.0)
+    val x = intensity (#x color)
+    val y = intensity (#y color)
+    val z = intensity (#z color)
+    val r = Math.sqrt x
+    val g = Math.sqrt y
+    val b = Math.sqrt z
+
 
     val ir = Real.toInt IEEEReal.TO_NEAREST (intensity r * 255.999)
     val ig = Real.toInt IEEEReal.TO_NEAREST (intensity g * 255.999)
