@@ -14,5 +14,8 @@ structure Texture = struct
   in
     if( ((x + y + z) mod 2 ) = 0 ) then Color.white else Color.black
   end;
+
+  fun solid_color (color:Color.t) (_:real)(_:real) (_: Vec3.t) =
+    color
 end;
 

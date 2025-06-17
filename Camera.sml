@@ -83,8 +83,11 @@ structure Camera = struct
             val ray_dir = (#dir ray);
             val a = 0.5 * (#y ray_dir + 1.0)
 
+            (*
             val col = Vec3.add (Vec3.scale (Color.create(1.0,1.0,1.0)) (1.0 - a))  (Vec3.scale
             (Color.create(0.5,0.7,1.0)) a)
+            *)
+            val col = Color.black
           in
             col
           end
@@ -92,14 +95,23 @@ structure Camera = struct
             let
               val mat = #mat hit
               val hit = Type.Hit hit
-              val (ray_r,col) = 
+
+              val emit_color = 
+                case mat of 
+                     Type.DiffuseLightT m => DiffuseLight.emit m ray hit
+                   | _ => Color.black
+
+              val scatter_res = 
                 case mat of
                      Type.LambertianT m => Lambertian.scatter m ray hit
                    | Type.MetalT m => Metal.scatter m ray hit
                    | Type.DielectricT m => Dielectric.scatter m ray hit
-
+                   | Type.DiffuseLightT m => DiffuseLight.scatter m ray hit
             in
-              Vec3.scaleV col (ray_color ray_r world (depth-1))
+              case scatter_res of 
+                NONE => emit_color
+               |SOME (ray_r,col) =>
+                  Vec3.add emit_color (Vec3.scaleV col (ray_color ray_r world (depth-1)))
             end
   in
       recode2col recode

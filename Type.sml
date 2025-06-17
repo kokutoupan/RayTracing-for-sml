@@ -2,9 +2,10 @@ structure Type = struct
 
   type texture_t = real -> real -> Vec3.t -> Color.t
   
-  type lambertian_t = {albedo:Color.t, tex: texture_t option}
+  type lambertian_t = {tex: texture_t}
   type metal_t = {albedo:Color.t, fuzz: real}
   type dielectric_t = {ref_idx: real}
+  type diffuseLight_t = {tex: texture_t}
 
   datatype hit_record = NoHit|  Hit of{
     p: Vec3.t,
@@ -18,6 +19,7 @@ structure Type = struct
   and material = LambertianT of lambertian_t
                | MetalT of metal_t
                | DielectricT of dielectric_t
+               | DiffuseLightT of diffuseLight_t
 
   datatype split_axis =
     X_Axis

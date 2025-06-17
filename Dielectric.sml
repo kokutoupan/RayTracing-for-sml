@@ -34,7 +34,7 @@ structure Dielectric = struct
       val scattered_ray = Ray.create p r_dir
 
     in
-      (scattered_ray, col)
+      SOME (scattered_ray, col)
     end
 
   | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"

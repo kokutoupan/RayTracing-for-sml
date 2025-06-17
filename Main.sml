@@ -31,7 +31,7 @@ structure Main = struct
                     let 
                       val albedo = Vec3.random_vector ()
                     in
-                      Lambertian.create albedo NONE
+                      Lambertian.fromColor albedo 
                     end
                   else if choose_mat < 0.95 then
                     let 
@@ -61,14 +61,13 @@ structure Main = struct
 
     val mini_bvh = Hittables.hbvh_build mini_spheres;
 
-    val mat_ground = Lambertian.create (Vec3.create(0.5, 0.5, 0.5))
-    (SOME (Texture.checker_texture 0.5));
+    val mat_ground = Lambertian.fromTexture (Texture.checker_texture 0.5);
     val sphere_g = Sphere.create (Vec3.create(0.0, ~1000.0, 0.0))  1000.0 mat_ground;
 
     val material1 = Dielectric.create 1.5;
     val sphere1 = Sphere.create (Vec3.create(0.0, 1.0, 0.0))  1.0 material1;
 
-    val material2 = Lambertian.create (Vec3.create(0.4, 0.2, 0.1)) NONE;
+    val material2 = Lambertian.fromColor (Vec3.create(0.4, 0.2, 0.1));
     val sphere2 = Sphere.create (Vec3.create(~4.0, 1.0, 0.0))  1.0 material2;
 
     val material3 = Metal.create (Vec3.create(0.7, 0.6, 0.5)) 0.0;
@@ -84,11 +83,12 @@ structure Main = struct
 
   fun quads () =
   let
-    val left_red = Lambertian.create (Vec3.create(1.0, 0.0, 0.0)) NONE;
-    val back_green = Lambertian.create (Vec3.create(0.0, 1.0, 0.0)) NONE;
-    val right_blue = Lambertian.create (Vec3.create(0.0, 0.0, 1.0)) NONE;
-    val uppder_orange = Lambertian.create (Vec3.create(1.0, 0.6, 0.0)) NONE;
-    val lowwer_teal = Lambertian.create (Vec3.create(0.0, 0.7, 0.9)) NONE;
+    val left_red = Lambertian.fromColor (Vec3.create(1.0, 0.0, 0.0));
+    val back_green = Lambertian.fromColor (Vec3.create(0.0, 1.0, 0.0));
+    val right_blue = Lambertian.fromColor (Vec3.create(0.0, 0.0, 1.0));
+    (*val uppder_orange = Lambertian.fromColor (Vec3.create(1.0, 0.6, 0.0));*)
+    val uppder_orange = DiffuseLight.fromColor (Vec3.create(1.0, 1.0, 1.0));
+    val lowwer_teal = Lambertian.fromColor (Vec3.create(0.0, 0.7, 0.9));
 
     val left = Quad.create (Vec3.create(~3.0,~2.0,5.0))
     (Vec3.create(0.0,0.0,~4.0)) (Vec3.create(0.0,4.0,0.0)) left_red;

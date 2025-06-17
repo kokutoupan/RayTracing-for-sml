@@ -17,6 +17,7 @@ Texture.sml
 Lambertian.sml
 Metal.sml
 Dielectric.sml
+DiffuseLight.sml
 
 (* Shape *)
 Sphere.sml

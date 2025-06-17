@@ -12,7 +12,7 @@ structure Metal = struct
        
       val scattered_ray = Ray.create p reflectFuzz
     in
-      (scattered_ray, albedo)
+      SOME (scattered_ray, albedo)
     end
 
   | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
