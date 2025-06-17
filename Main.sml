@@ -110,12 +110,68 @@ structure Main = struct
     lowwer])
   end;
 
+  fun cornell_box () =
+  let 
+    val red = Lambertian.fromColor (Vec3.create(0.65, 0.05, 0.05));
+    val white = Lambertian.fromColor (Vec3.create(0.73, 0.73, 0.73));
+    val green = Lambertian.fromColor (Vec3.create(0.12, 0.45, 0.15));
+    val light = DiffuseLight.fromColor (Vec3.create(15.0, 15.0, 15.0));
+
+    (* 左の壁 (x=555) *)
+    (* 修正: uとvを入れ替え、法線を内向き(-X)に *)
+    val left = Quad.create (Vec3.create(555.0, 0.0, 0.0))
+                           (Vec3.create(0.0, 0.0, 555.0))  (* vが先に *)
+                           (Vec3.create(0.0, 555.0, 0.0))  (* uが後に *)
+                           green;
+
+    (* 右の壁 (x=0) *)
+    (* 変更なし: 元の定義で正しい *)
+    val right = Quad.create (Vec3.create(0.0, 0.0, 0.0))
+                            (Vec3.create(0.0, 555.0, 0.0))
+                            (Vec3.create(0.0, 0.0, 555.0))
+                            red;
+
+    (* 光源 *)
+    (* 変更なし: 元の定義で正しい *)
+    val light_source = Quad.create (Vec3.create(343.0, 554.0, 332.0))
+                                   (Vec3.create(~130.0, 0.0, 0.0))
+                                   (Vec3.create(0.0, 0.0, ~105.0))
+                                   light;
+
+    (* 床 (y=0) *)
+    (* 修正: uとvを入れ替え、法線を内向き(+Y)に *)
+    val floor = Quad.create (Vec3.create(0.0, 0.0, 0.0))
+                            (Vec3.create(0.0, 0.0, 555.0))  (* vが先に *)
+                            (Vec3.create(555.0, 0.0, 0.0))  (* uが後に *)
+                            white;
+
+    (* 天井 (y=555) *)
+    (* 変更なし: 元の定義で正しい *)
+    val ceiling = Quad.create (Vec3.create(555.0, 555.0, 555.0))
+                              (Vec3.create(~555.0, 0.0, 0.0))
+                              (Vec3.create(0.0, 0.0, ~555.0))
+                              white;
+
+    (* 奥の壁 (z=555) *)
+    (* 修正: uとvを入れ替え、法線を内向き(-Z)に *)
+    val back_wall = Quad.create (Vec3.create(0.0, 0.0, 555.0))
+                                (Vec3.create(0.0, 555.0, 0.0))  (* vが先に *)
+                                (Vec3.create(555.0, 0.0, 0.0))  (* uが後に *)
+                                white;
+
+  
+  in 
+    Type.Hittable_listT (Hittables.hlst_create_list [left, right, light_source,
+    floor, ceiling, back_wall])
+
+  end
+    
 
 
   val output = "out.ppm";
 
   (*val wd_obj = many_spheres_stage ();*)
-  val wd_obj = quads ();
+  val wd_obj = cornell_box ();
 
   fun render output = 
   let

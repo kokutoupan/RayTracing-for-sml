@@ -1,7 +1,7 @@
 structure Interval = struct
   type t = real * real;
 
-  fun create (min:t) (max:t) =
+  fun create (min:real) (max:real) =
     (min,max);
 
   fun createIN ((a0,a1):t) ((b0,b1):t) =

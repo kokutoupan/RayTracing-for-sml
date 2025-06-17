@@ -23,7 +23,7 @@ structure Quad = struct
     let 
       val normal = Vec3.cross u v
       val w = Vec3.divide normal (Vec3.length_sq normal)
-      val n = Vec3.unit_vector (Vec3.cross u v)
+      val n = Vec3.unit_vector normal
     in
       QuadT {q=q,u=u,v=v,w=w, mat=mat, bbox=set_aabb q u v,
       normal=n,d=Vec3.dot q n}

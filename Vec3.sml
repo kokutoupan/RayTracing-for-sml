@@ -66,9 +66,9 @@ structure Vec3 = struct
 
   fun random_vector ()=
   let 
-    val x = randReal ()
-    val y = randReal ()
-    val z = randReal ()
+    val x = (randReal ())*2.0 - 1.0
+    val y = (randReal ())*2.0 - 1.0
+    val z = (randReal ())*2.0 - 1.0
   in
     create(x,y,z)
   end;
