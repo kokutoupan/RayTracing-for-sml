@@ -47,12 +47,14 @@ struct
   | H_bvhT of
       {lhs: shape, rhs: shape, bbox: AABB.t, axis_opt: split_axis option}
   | TranslateT of {obj: shape, offset: Vec3.t, bbox: AABB.t}
+  | RotateT of {obj: shape, axis: Vec3.t, angle: real, bbox: AABB.t}
   | NONE; (*dumy*)
 
   type hittable_list = {lst: shape list, bbox: AABB.t};
   type h_bvh =
     {lhs: shape, rhs: shape, bbox: AABB.t, axis_opt: split_axis option};
   type translate_t = {obj: shape, offset: Vec3.t, bbox: AABB.t}
+  type rotate_t = {obj: shape, axis: Vec3.t, angle: real, bbox: AABB.t}
 
   (* shape から bbox を抽出するヘルパー関数 *)
   fun bbox_of_shape (s: shape) : AABB.t =
@@ -62,6 +64,7 @@ struct
     | QuadT record => #bbox record
     | H_bvhT record => #bbox record
     | TranslateT record => #bbox record
+    | RotateT record => #bbox record
     | NONE => raise Fail "don't allow none bbox_of_shape";
 
   fun get_hittable_list_payload (shape_value: shape) : hittable_list =

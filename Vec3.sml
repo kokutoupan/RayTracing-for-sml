@@ -7,6 +7,10 @@ struct
 
   val zero = {x = 0.0, y = 0.0, z = 0.0}
 
+  val Xaxis = {x = 1.0, y = 0.0, z = 0.0}
+  val Yaxis = {x = 0.0, y = 1.0, z = 0.0}
+  val Zaxis = {x = 0.0, y = 0.0, z = 1.0}
+
   fun neg (v: t) =
     {x = #x v * (~1.0), y = #y v * (~1.0), z = #z v * (~1.0)}
 
@@ -43,6 +47,27 @@ struct
     , y = #z v1 * #x v2 - #x v1 * #z v2
     , z = #x v1 * #y v2 - #y v1 * #x v2
     }
+
+
+  fun rotate (v: t) (axis: t) (theta: real) =
+    let
+      (* 回転軸を単位ベクトルに正規化 *)
+      val k = unit_vector axis
+      val cos_theta = Math.cos theta
+      val sin_theta = Math.sin theta
+
+      (* ロドリゲスの回転公式に基づいて3つの項を計算 *)
+      (* 1. v * cos(theta) *)
+      val term1 = scale v cos_theta
+      (* 2. (k x v) * sin(theta) *)
+
+      val term2 = scale (cross k v) sin_theta
+      (* 3. k * (k・v) * (1 - cos(theta)) *)
+      val term3 = scale k ((dot k v) * (1.0 - cos_theta))
+    in
+      (* 3つの項をすべて足し合わせる *)
+      add (add term1 term2) term3
+    end
 
   fun random_vector () =
     let

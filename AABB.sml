@@ -33,6 +33,50 @@ struct
     , z = Interval.move (#z a) (#z v)
     }
 
+  fun rotate (box: t) (axis: Vec3.t) (theta: real) : t =
+    let
+      val {x = (x_min, x_max), y = (y_min, y_max), z = (z_min, z_max)} = box
+
+      (* 1. 元のAABBの8つの頂点をリストアップ *)
+      val vertices =
+        [ Vec3.create (x_min, y_min, z_min)
+        , Vec3.create (x_max, y_min, z_min)
+        , Vec3.create (x_min, y_max, z_min)
+        , Vec3.create (x_max, y_max, z_min)
+        , Vec3.create (x_min, y_min, z_max)
+        , Vec3.create (x_max, y_min, z_max)
+        , Vec3.create (x_min, y_max, z_max)
+        , Vec3.create (x_max, y_max, z_max)
+        ]
+
+      (* 2. 各頂点を回転させる *)
+      val rotated_vertices =
+        List.map (fn v => Vec3.rotate v axis theta) vertices
+
+      (* 3. 回転後の頂点から新しい最小・最大座標を見つける *)
+      (* 最初の頂点で最小・最大の初期値を設定 *)
+      val initial_min_max =
+        case rotated_vertices of
+          [] =>
+            (Vec3.zero, Vec3.zero) (* このケースは発生しないはず *)
+        | first_v :: _ => (first_v, first_v)
+
+      (* 全ての回転後頂点を走査して最小・最大を更新 *)
+      val (new_min, new_max) =
+        List.foldl
+          (fn (v, (current_min, current_max)) =>
+             ( { x = Real.min (#x v, #x current_min)
+               , y = Real.min (#y v, #y current_min)
+               , z = Real.min (#z v, #z current_min)
+               }
+             , { x = Real.max (#x v, #x current_max)
+               , y = Real.max (#y v, #y current_max)
+               , z = Real.max (#z v, #z current_max)
+               }
+             )) initial_min_max rotated_vertices
+    in
+      createV new_min new_max
+    end
 
   fun axis_interval (aabb: t) (n: int) =
     if n = 0 then (#x aabb) else if n = 1 then (#y aabb) else (#z aabb)

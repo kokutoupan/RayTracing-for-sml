@@ -6,6 +6,8 @@ struct
   fun degrees_to_radians degrees =
     degrees * 0.017453292519943295769236907684886
 
+  val deg2rad = degrees_to_radians;
+
   fun min (a: real) (b: real) =
     if a < b then a else b
   fun max (a: real) (b: real) =

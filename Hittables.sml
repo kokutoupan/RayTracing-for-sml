@@ -2,6 +2,8 @@ structure Hittables =
 struct
   type hlst_t = Type.hittable_list;
   type hbvh_t = Type.h_bvh;
+  type translate_t = Type.translate_t;
+  type rotate_t = Type.rotate_t;
 
   val Min_Leaf_size = 15
 
@@ -76,6 +78,14 @@ struct
       , bbox = AABB.translate (Type.bbox_of_shape obj) offset
       };
 
+  fun create_rotate (obj: Type.shape) (axis: Vec3.t) (angle: real) =
+    Type.RotateT
+      { obj = obj
+      , axis = axis
+      , angle = angle
+      , bbox = AABB.rotate (Type.bbox_of_shape obj) axis angle
+      };
+
   local
     (* レイの方向ベクトルの特定の軸成分を取得するヘルパー関数 *)
     fun get_ray_dir_component (ray_dir: Vec3.t, axis: Type.split_axis) : real =
@@ -143,7 +153,7 @@ struct
       else
         Type.NoHit
 
-    and trans_hit (trans: Type.translate_t) (ray: Ray.t) (t_ren: Interval.t) :
+    and trans_hit (trans: translate_t) (ray: Ray.t) (t_ren: Interval.t) :
       Type.hit_record =
       let
         val trans_ray =
@@ -164,6 +174,30 @@ struct
               }
       end
 
+    and rotate_hit (rotate: rotate_t) (ray: Ray.t) (t_ren: Interval.t) :
+      Type.hit_record =
+      let
+        val rotate_ray =
+          Ray.create (Vec3.rotate (#orig ray) (#axis rotate) (#angle rotate))
+            (Vec3.rotate (#dir ray) (#axis rotate) (#angle rotate))
+        val record = hit_shape (#obj rotate) rotate_ray t_ren
+      in
+        case record of
+          Type.NoHit => Type.NoHit
+        | Type.Hit r =>
+            Type.Hit
+              { p = Vec3.rotate (#p r) (#axis rotate) (~(#angle rotate))
+              , normal = Vec3.rotate (#normal r) (#axis rotate)
+                  (~(#angle rotate))
+              , t = #t r
+              , u = #u r
+              , v = #v r
+              , front_face = #front_face r
+              , mat = #mat r
+              }
+      end
+
+
     and hit_shape (Type.NONE) _ _ = Type.NoHit
       | hit_shape (Type.SphereT s) ray (t_min, t_max) : Type.hit_record =
           Sphere.hit s ray (t_min, t_max)
@@ -175,6 +209,8 @@ struct
           hbvh_hit bvh ray (t_min, t_max)
       | hit_shape (Type.TranslateT trans) ray (t_min, t_max) : Type.hit_record =
           trans_hit trans ray (t_min, t_max)
+      | hit_shape (Type.RotateT rot) ray (t_min, t_max) : Type.hit_record =
+          rotate_hit rot ray (t_min, t_max)
   end
 
   fun hbvh_create (lhs: Type.shape) (rhs: Type.shape) =

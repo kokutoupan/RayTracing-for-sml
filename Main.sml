@@ -192,16 +192,19 @@ struct
 
       val small_box =
         Hittables.create_translate
-          (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
-             (Vec3.create (165.0, 165.0, 165.0)) white)
-          (Vec3.create (130.0, 0.0, 65.0));
+          (Hittables.create_rotate
+             (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
+                (Vec3.create (165.0, 165.0, 165.0)) white) Vec3.Yaxis
+             (Common.deg2rad 15.0)) (Vec3.create (130.0, 0.0, 65.0));
 
 
       val big_box =
         Hittables.create_translate
-          (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
-             (Vec3.create (165.0, 330.0, 165.0)) white)
-          (Vec3.create (265.0, 0.0, 295.0));
+          (Hittables.create_rotate
+             (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
+                (Vec3.create (165.0, 330.0, 165.0)) white) Vec3.Yaxis
+             (Common.deg2rad ~18.0)) (Vec3.create (265.0, 0.0, 295.0))
+
 
       val cam_settings =
         { aspect_ratio = 1.0
