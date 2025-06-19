@@ -33,6 +33,14 @@ structure AABB = struct
       z = Interval.createIN (#z a) (#z b)
     }
 
+  fun translate (a:t) (v:Vec3.t) =
+    {
+      x = Interval.move (#x a) (#x v),
+      y = Interval.move (#y a) (#y v),
+      z = Interval.move (#z a) (#z v)
+    }
+
+
   fun axis_interval (aabb:t) (n:int) =
     if n = 0 then (#x aabb) else if n = 1 then (#y aabb) else (#z aabb)
 

@@ -181,11 +181,22 @@ structure Main = struct
                                 (Vec3.create(555.0, 0.0, 0.0))  (* uが後に *)
                                 white;
 
+    val small_box = Hittables.create_translate 
+      (Hittables.create_box (Vec3.create(0.0, 0.0, 0.0))
+      (Vec3.create(165.0, 165.0, 165.0)) white)
+      (Vec3.create(130.0, 0.0, 65.0));
+    
+
+    val big_box = Hittables.create_translate
+      (Hittables.create_box (Vec3.create(0.0, 0.0, 0.0))
+      (Vec3.create(165.0, 330.0, 165.0)) white)
+      (Vec3.create(265.0, 0.0, 295.0));
+
     val cam_settings = {
       aspect_ratio = 1.0,
-      image_width = 800,
-      samples_per_pixel = 200,
-      max_depth = 50,
+      image_width = 200,
+      samples_per_pixel = 50,
+      max_depth = 30,
       vfov = 40.0,
       lookfrom = Vec3.create(278.0, 278.0, ~800.0),
       lookat = Vec3.create(278.0, 278.0, 0.0),
@@ -198,7 +209,7 @@ structure Main = struct
   in 
     (cam_settings, 
     Type.Hittable_listT (Hittables.hlst_create_list [left, right, light_source,
-    floor, ceiling, back_wall]))
+    floor, ceiling, back_wall,small_box,big_box]))
 
   end
     

@@ -37,6 +37,9 @@ structure Interval = struct
   fun expand (min,max) delta = 
     (min-delta/2.0,max-delta/2.0)
 
+  fun move ((min,max):t) (delta:real) =
+    (min + delta,max + delta)
+
 
   fun print_interval ((a0,a1):t) =
   let 

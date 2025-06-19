@@ -23,6 +23,39 @@ structure Hittables = struct
   fun hlst_create_list (shapes:Type.shape list) =
     hlst_add_list (hlst_empty ()) shapes
 
+  fun create_box (a:Vec3.t) (b:Vec3.t) (mat:Type.material): Type.shape =
+  let
+    val min = Vec3.create ((Real.min ((#x a),(#x b))) ,(Real.min((#y a),(#y b))),
+    (Real.min ((#z a),(#z b))));
+    val max = Vec3.create ((Real.max ((#x a),(#x b))) ,(Real.max ((#y a),(#y
+    b))),
+    (Real.max ((#z a),(#z b))));
+
+
+    val dx = Vec3.create((#x max) - (#x min),0.0,0.0);
+    val dy = Vec3.create(0.0,(#y max) - (#y min),0.0);
+    val dz = Vec3.create(0.0,0.0,(#z max) - (#z min));
+
+    val front = Quad.create (Vec3.create((#x min),(#y min),(#z max))) dx dy mat;
+    val right = Quad.create (Vec3.create((#x max),(#y min),(#z max))) 
+    (Vec3.neg dz) dy mat;
+    val back = Quad.create (Vec3.create((#x max),(#y min),(#z min))) (Vec3.neg dx) dy mat;
+    val left = Quad.create (Vec3.create((#x min),(#y min),(#z min))) dz dy mat;
+    val top = Quad.create (Vec3.create((#x min),(#y max),(#z max))) dx (Vec3.neg
+    dz) mat;
+    val bottom = Quad.create (Vec3.create((#x min),(#y min),(#z min))) dx dz
+    mat;
+
+    val objs = hlst_create_list [front,back,right,left,top,bottom]
+
+  in
+    Type.Hittable_listT objs
+  end
+
+  fun create_translate (obj:Type.shape) (offset:Vec3.t) =
+    Type.TranslateT {obj = obj, offset = offset,bbox = AABB.translate
+    (Type.bbox_of_shape obj) offset};
+
 local  
   (* レイの方向ベクトルの特定の軸成分を取得するヘルパー関数 *)
   fun get_ray_dir_component (ray_dir: Vec3.t, axis: Type.split_axis) : real =
@@ -84,6 +117,18 @@ in
       end
     else Type.NoHit
 
+  and trans_hit (trans: Type.translate_t) (ray: Ray.t) (t_ren:Interval.t):Type.hit_record =
+  let 
+    val trans_ray = Ray.create (Vec3.sub (#orig ray) (#offset trans)) (#dir ray)
+    val record = hit_shape (#obj trans) trans_ray t_ren
+  in
+    case record of 
+         Type.NoHit => record
+       | Type.Hit r => Type.Hit {p = Vec3.add (#p r) (#offset trans),
+         normal = #normal r, t = #t r, u = #u r, v = #v r, front_face =
+         #front_face r, mat = #mat r}
+  end
+
   and hit_shape (Type.NONE) _ _ = Type.NoHit
     | hit_shape (Type.SphereT s) ray (t_min,t_max) :Type.hit_record =
         Sphere.hit s ray (t_min,t_max)
@@ -93,6 +138,8 @@ in
         hlst_hit lst ray (t_min,t_max)
     | hit_shape (Type.H_bvhT bvh) ray (t_min,t_max):Type.hit_record =
         hbvh_hit bvh ray (t_min,t_max)
+    | hit_shape (Type.TranslateT trans) ray (t_min,t_max):Type.hit_record =
+        trans_hit trans ray (t_min,t_max)
 end
 
   fun hbvh_create (lhs:Type.shape) (rhs:Type.shape) =
