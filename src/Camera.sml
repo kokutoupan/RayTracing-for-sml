@@ -133,7 +133,7 @@ struct
       fun ray_color _ _ 0 = Color.create (0.0, 0.0, 0.0)
         | ray_color (ray: Ray.t) (world: Type.shape) (depth) =
             let
-              val recode = Hittables.hit_shape world ray
+              val recode = Hittables.hit world ray
                 (Interval.create 0.001 Real.maxFinite)
 
               fun recode2col (recode: Type.hit_record) =
@@ -145,11 +145,11 @@ struct
                       val hit_record = Type.Hit hit
 
                       val emit_color =
-                        case mat of
-                          Type.Material m =>(#emit m)ray hit_record
+                        case mat of Type.Material m => (#emit m) ray hit_record
 
                       val scatter_res =
-                        case mat of Type.Material m =>(#scatter m)ray hit_record
+                        case mat of
+                          Type.Material m => (#scatter m) ray hit_record
                     in
                       case scatter_res of
                         NONE => emit_color

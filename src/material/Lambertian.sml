@@ -12,13 +12,13 @@ struct
 
     | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
 
-  fun fromTexture (texture: Texture.t) = 
-  let 
-    val matData = {tex = texture}
-  in
-    Type.Material {scatter = scatter matData , emit = fn _ => fn _ =>
-    Color.black }
-  end
+  fun fromTexture (texture: Texture.t) =
+    let
+      val matData = {tex = texture}
+    in
+      Type.Material
+        {scatter = scatter matData, emit = fn _ => fn _ => Color.black}
+    end
 
   fun fromColor (color: Color.t) =
     fromTexture (Texture.solid_color color)

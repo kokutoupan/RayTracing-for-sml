@@ -9,12 +9,10 @@ struct
     | emit _ _ Type.NoHit = raise Fail "emit not hit"
 
 
-  fun fromTexture (texture: Texture.t) = 
-  let 
-    val matData = {tex = texture}
-  in
-    Type.Material {scatter = scatter matData , emit = emit matData }
-  end
+  fun fromTexture (texture: Texture.t) =
+    let val matData = {tex = texture}
+    in Type.Material {scatter = scatter matData, emit = emit matData}
+    end
 
   fun fromColor (albedo: Color.t) =
     fromTexture (Texture.solid_color albedo)

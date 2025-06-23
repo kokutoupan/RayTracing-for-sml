@@ -21,10 +21,10 @@ struct
       , mat: material
       }
   and material =
-    Material of {
-      scatter: Ray.t -> hit_record -> (Ray.t * Color.t) option,
-      emit:    Ray.t -> hit_record -> Color.t
-    }
+    Material of
+      { scatter: Ray.t -> hit_record -> (Ray.t * Color.t) option
+      , emit: Ray.t -> hit_record -> Color.t
+      }
 
   datatype split_axis = X_Axis | Y_Axis | Z_Axis
 

@@ -38,7 +38,10 @@ struct
 
     | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
 
-  fun create (ref_idx: real) = Type.Material{ scatter = scatter {ref_idx =
-    ref_idx} ,emit = fn _ => fn _ => Color.black }
+  fun create (ref_idx: real) =
+    Type.Material
+      { scatter = scatter {ref_idx = ref_idx}
+      , emit = fn _ => fn _ => Color.black
+      }
 
 end

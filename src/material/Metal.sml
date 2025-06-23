@@ -17,10 +17,10 @@ struct
     | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
 
   fun create (color: Color.t) fuzz =
-  let
-    val matData = {albedo = color, fuzz = fuzz}
-  in
-    Type.Material {scatter = scatter matData , emit = fn _ => fn _ =>
-    Color.black }
-  end
+    let
+      val matData = {albedo = color, fuzz = fuzz}
+    in
+      Type.Material
+        {scatter = scatter matData, emit = fn _ => fn _ => Color.black}
+    end
 end
