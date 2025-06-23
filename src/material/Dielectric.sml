@@ -2,7 +2,6 @@ structure Dielectric =
 struct
   type t = Type.dielectric_t
 
-  fun create (ref_idx: real) = Type.DielectricT {ref_idx = ref_idx}
 
   fun scatter ({ref_idx, ...}: t) (ray: Ray.t)
         (Type.Hit {p, normal, t, front_face, ...}) =
@@ -38,4 +37,11 @@ struct
         end
 
     | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
+
+  fun create (ref_idx: real) =
+    Type.Material
+      { scatter = scatter {ref_idx = ref_idx}
+      , emit = fn _ => fn _ => Color.black
+      }
+
 end
