@@ -21,11 +21,10 @@ struct
       , mat: material
       }
   and material =
-    LambertianT of lambertian_t
-  | MetalT of metal_t
-  | DielectricT of dielectric_t
-  | DiffuseLightT of diffuseLight_t
-  | IsotropicT of isotropic_t
+    Material of {
+      scatter: Ray.t -> hit_record -> (Ray.t * Color.t) option,
+      emit:    Ray.t -> hit_record -> Color.t
+    }
 
   datatype split_axis = X_Axis | Y_Axis | Z_Axis
 
@@ -70,12 +69,5 @@ struct
     | TranslateT record => #bbox record
     | RotateT record => #bbox record
     | NONE => raise Fail "don't allow none bbox_of_shape";
-
-  fun get_hittable_list_payload (shape_value: shape) : hittable_list =
-    case shape_value of
-      Hittable_listT record_payload => record_payload
-    | _ =>
-        raise Fail
-          "unsafe_get_hittable_list_payload: shape was not a Hittable_listT";
 
 end;

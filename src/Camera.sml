@@ -146,21 +146,10 @@ struct
 
                       val emit_color =
                         case mat of
-                          Type.DiffuseLightT m =>
-                            DiffuseLight.emit m ray hit_record
-                        | _ => Color.black
+                          Type.Material m =>(#emit m)ray hit_record
 
                       val scatter_res =
-                        case mat of
-                          Type.LambertianT m =>
-                            Lambertian.scatter m ray hit_record
-                        | Type.MetalT m => Metal.scatter m ray hit_record
-                        | Type.DielectricT m =>
-                            Dielectric.scatter m ray hit_record
-                        | Type.DiffuseLightT m =>
-                            DiffuseLight.scatter m ray hit_record
-                        | Type.IsotropicT m =>
-                            Isotropic.scatter m ray hit_record
+                        case mat of Type.Material m =>(#scatter m)ray hit_record
                     in
                       case scatter_res of
                         NONE => emit_color

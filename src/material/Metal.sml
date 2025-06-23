@@ -2,7 +2,6 @@ structure Metal =
 struct
   type t = Type.metal_t
 
-  fun create (color: Color.t) fuzz = Type.MetalT {albedo = color, fuzz = fuzz}
 
   fun scatter ({albedo, fuzz, ...}: t) (ray: Ray.t) (Type.Hit {p, normal, ...}) =
         let
@@ -16,4 +15,12 @@ struct
         end
 
     | scatter _ _ Type.NoHit = raise Fail "Cannot scatter from NoHit"
+
+  fun create (color: Color.t) fuzz =
+  let
+    val matData = {albedo = color, fuzz = fuzz}
+  in
+    Type.Material {scatter = scatter matData , emit = fn _ => fn _ =>
+    Color.black }
+  end
 end
