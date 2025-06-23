@@ -1,30 +1,31 @@
 (* Common utilities *)
 $(SML_LIB)/basis/basis.mlb
 
-ListMergeSort.sml
-MyRandom.sml
-Common.sml
-Interval.sml
-Vec3.sml
-Ray.sml
-AABB.sml
-Type.sml
-Hittable.sml
+src/core/ListMergeSort.sml
+src/core/MyRandom.sml
+src/core/Common.sml
+src/core/Interval.sml
+src/core/Vec3.sml
+src/core/Ray.sml
 
-Texture.sml
+src/hittable/AABB.sml
+src/core/Type.sml
+src/hittable/Hittable.sml
+
+src/texture/Texture.sml
 
 (* Material *)
-Lambertian.sml
-Metal.sml
-Dielectric.sml
-DiffuseLight.sml
-Isotropic.sml
+src/material/Lambertian.sml
+src/material/Metal.sml
+src/material/Dielectric.sml
+src/material/DiffuseLight.sml
+src/material/Isotropic.sml
 
 (* Shape *)
-Sphere.sml
-Quad.sml
-Hittables.sml
+src/hittable/Sphere.sml
+src/hittable/Quad.sml
+src/hittable/Hittables.sml
 
 (* Camera and Main *)
-Camera.sml
-Main.sml
+src/Camera.sml
+src/Main.sml

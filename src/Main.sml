@@ -328,7 +328,7 @@ struct
     end
 
 
-  val output = "out.ppm";
+  val output = "output/out.ppm";
 
   (*val wd_obj = many_spheres_stage ();*)
   val (cam_settings, wd_obj) = cornell_smoke ();
