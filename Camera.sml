@@ -159,6 +159,8 @@ struct
                             Dielectric.scatter m ray hit_record
                         | Type.DiffuseLightT m =>
                             DiffuseLight.scatter m ray hit_record
+                        | Type.IsotropicT m =>
+                            Isotropic.scatter m ray hit_record
                     in
                       case scatter_res of
                         NONE => emit_color

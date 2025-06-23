@@ -236,11 +236,102 @@ struct
 
     end
 
+  fun cornell_smoke () =
+    let
+      val red = Lambertian.fromColor (Vec3.create (0.65, 0.05, 0.05));
+      val white = Lambertian.fromColor (Vec3.create (0.73, 0.73, 0.73));
+      val green = Lambertian.fromColor (Vec3.create (0.12, 0.45, 0.15));
+      val light = DiffuseLight.fromColor (Vec3.create (7.0, 7.0, 7.0));
+      val black_iso = Isotropic.fromColor (Color.black);
+      val white_iso = Isotropic.fromColor (Color.white);
+
+      (* 左の壁 (x=555) *)
+      val left =
+        Quad.create (Vec3.create (555.0, 0.0, 0.0))
+          (Vec3.create (0.0, 0.0, 555.0)) (* vが先に *)
+          (Vec3.create (0.0, 555.0, 0.0)) (* uが後に *) green;
+
+      (* 右の壁 (x=0) *)
+      val right =
+        Quad.create (Vec3.create (0.0, 0.0, 0.0))
+          (Vec3.create (0.0, 555.0, 0.0)) (Vec3.create (0.0, 0.0, 555.0)) red;
+
+      (* 光源 *)
+      val light_source =
+        Quad.create (Vec3.create (443.0, 554.0, 432.0))
+          (Vec3.create (~330.0, 0.0, 0.0)) (Vec3.create (0.0, 0.0, ~305.0))
+          light;
+      (* 床 (y=0) *)
+      val floor =
+        Quad.create (Vec3.create (0.0, 0.0, 0.0))
+          (Vec3.create (0.0, 0.0, 555.0)) (* vが先に *)
+          (Vec3.create (555.0, 0.0, 0.0)) (* uが後に *) white;
+
+      val ceiling =
+        Quad.create (Vec3.create (555.0, 555.0, 555.0))
+          (Vec3.create (~555.0, 0.0, 0.0)) (Vec3.create (0.0, 0.0, ~555.0))
+          white;
+
+      val back_wall =
+        Quad.create (Vec3.create (0.0, 0.0, 555.0))
+          (Vec3.create (0.0, 555.0, 0.0)) (* vが先に *)
+          (Vec3.create (555.0, 0.0, 0.0)) (* uが後に *) white;
+
+      val small_box =
+        Hittables.create_constantMedium
+          (Hittables.create_translate
+             (Hittables.create_rotate
+                (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
+                   (Vec3.create (165.0, 165.0, 165.0)) white) Vec3.Yaxis
+                (Common.deg2rad 15.0)) (Vec3.create (130.0, 0.0, 65.0))) 0.01
+          white_iso;
+
+
+      val big_box =
+        Hittables.create_constantMedium
+          (Hittables.create_translate
+             (Hittables.create_rotate
+                (Hittables.create_box (Vec3.create (0.0, 0.0, 0.0))
+                   (Vec3.create (165.0, 330.0, 165.0)) white) Vec3.Yaxis
+                (Common.deg2rad ~18.0)) (Vec3.create (265.0, 0.0, 295.0))) 0.01
+          black_iso
+
+
+      val cam_settings =
+        { aspect_ratio = 1.0
+        , image_width = 300
+        , samples_per_pixel = 100
+        , max_depth = 50
+        , vfov = 40.0
+        , lookfrom = Vec3.create (278.0, 278.0, ~800.0)
+        , lookat = Vec3.create (278.0, 278.0, 0.0)
+        , vup = Vec3.create (0.0, 1.0, 0.0)
+        , defocus_angle = 0.0
+        , focus_dist = 10.0
+        , background_color = Color.black
+        }
+
+    in
+      ( cam_settings
+      , Type.Hittable_listT (Hittables.hlst_create_list
+          [ left
+          , right
+          , light_source
+          , floor
+          , ceiling
+          , back_wall
+          , small_box
+          , big_box
+          ])
+      )
+
+    end
+
 
   val output = "out.ppm";
 
   (*val wd_obj = many_spheres_stage ();*)
-  val (cam_settings, wd_obj) = cornell_box ();
+  val (cam_settings, wd_obj) = cornell_smoke ();
 
   fun render output =
     let

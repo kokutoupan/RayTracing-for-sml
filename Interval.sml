@@ -2,6 +2,8 @@ structure Interval =
 struct
   type t = real * real;
 
+  val universe = (~ Real.maxFinite, Real.maxFinite)
+
   fun create (min: real) (max: real) = (min, max);
 
   fun createIN ((a0, a1): t) ((b0, b1): t) =

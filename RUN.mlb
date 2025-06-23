@@ -18,6 +18,7 @@ Lambertian.sml
 Metal.sml
 Dielectric.sml
 DiffuseLight.sml
+Isotropic.sml
 
 (* Shape *)
 Sphere.sml

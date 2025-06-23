@@ -4,6 +4,7 @@ struct
   type hbvh_t = Type.h_bvh;
   type translate_t = Type.translate_t;
   type rotate_t = Type.rotate_t;
+  type constantMedium_t = Type.constantMedium_t;
 
   val Min_Leaf_size = 15
 
@@ -28,6 +29,16 @@ struct
 
   fun hlst_create_list (shapes: Type.shape list) =
     hlst_add_list (hlst_empty ()) shapes
+
+
+  fun create_constantMedium (boundary: Type.shape) (density: real)
+    (mat: Type.material) : Type.shape =
+    let
+      val negInvDensity = ~1.0 / density
+    in
+      Type.ConstantMediumT
+        {boundary = boundary, negInvDensity = negInvDensity, mat = mat}
+    end;
 
   fun create_box (a: Vec3.t) (b: Vec3.t) (mat: Type.material) : Type.shape =
     let
@@ -197,12 +208,84 @@ struct
               }
       end
 
+    and constantMedium_hit (cmed: constantMedium_t) ray (t_min, t_max) :
+      Type.hit_record =
+      let
+        fun clamp_time (t1, t2) : real * real =
+          let
+            val tftmp = if t1 < t_min then t_min else t1
+
+            val tf = if tftmp < 0.0 then 0.0 else tftmp
+            val ta = if t2 > t_max then t_max else t2
+          in
+            (tf, ta)
+          end
+
+
+        fun distance_inside (t1, tf, ta) : real =
+          if t1 >= ta then
+            0.0
+          else
+            let
+              val ray_length = Vec3.length (#dir ray)
+              val dist_inside_boundary = (ta - tf) * ray_length
+            in
+              dist_inside_boundary
+            end
+
+        fun hit_distance () : real =
+          (#negInvDensity cmed) * Math.ln (randReal ())
+
+        fun hit_time (t1, t2) : real =
+          let
+            val (tf, ta) = clamp_time (t1, t2)
+            val distance = distance_inside (t1, tf, ta)
+            val hit_dis = hit_distance ()
+          in
+            if distance > hit_dis then tf + hit_dis / (Vec3.length (#dir ray))
+            else ~1.0
+          end
+
+        val rec1 = hit_shape (#boundary cmed) ray Interval.universe
+      in
+        case rec1 of
+          Type.NoHit => Type.NoHit
+        | Type.Hit r1 =>
+            let
+              val t1 = #t r1
+              val rec2 =
+                hit_shape (#boundary cmed) ray (t1 + 0.001, Real.maxFinite)
+            in
+              case rec2 of
+                Type.NoHit => Type.NoHit
+              | Type.Hit r =>
+                  let
+                    val t = hit_time (t1, (#t r))
+                  in
+                    if t < ~0.5 then
+                      Type.NoHit
+                    else
+                      Type.Hit
+                        { p = Ray.at ray t
+                        , normal = Vec3.create (1.0, 0.0, 0.0)
+                        , t = t
+                        , u = 0.5
+                        , v = 0.5
+                        , front_face = true
+                        , mat = #mat cmed
+                        }
+                  end
+            end
+      end
 
     and hit_shape (Type.NONE) _ _ = Type.NoHit
       | hit_shape (Type.SphereT s) ray (t_min, t_max) : Type.hit_record =
           Sphere.hit s ray (t_min, t_max)
       | hit_shape (Type.QuadT q) ray (t_min, t_max) : Type.hit_record =
           Quad.hit q ray (t_min, t_max)
+      | hit_shape (Type.ConstantMediumT cmed) ray (t_min, t_max) :
+        Type.hit_record =
+          constantMedium_hit cmed ray (t_min, t_max)
       | hit_shape (Type.Hittable_listT lst) ray (t_min, t_max) : Type.hit_record =
           hlst_hit lst ray (t_min, t_max)
       | hit_shape (Type.H_bvhT bvh) ray (t_min, t_max) : Type.hit_record =
