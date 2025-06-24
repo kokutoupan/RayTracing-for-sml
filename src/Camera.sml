@@ -180,25 +180,26 @@ struct
       fun compute_pixel_color (i, j) =
         let
 
-          val sum_vectors = fn vectors =>
-            (List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero
-               vectors)
-
           fun sample_once (s_i, s_j) =
             let val ray = get_ray (i, j) (s_i, s_j)
             in ray_color ray world max_depth
             end
 
-          fun colum_color s_i =
-            let
-              val colum_color_samples = List.tabulate (sqrt_spp, fn x =>
-                (sample_once (s_i, x)))
-            in
-              sum_vectors colum_color_samples
-            end
+          fun total_sample 0 = Vec3.zero
+            | total_sample s_i =
+                let
+
+                  fun colum_sample 0 = Vec3.zero
+                    | colum_sample s_j =
+                        Vec3.add (sample_once (s_i, s_j))
+                          (colum_sample (s_j - 1))
+                in
+                  Vec3.add (colum_sample sqrt_spp) (total_sample (s_i - 1))
+                end
+
 
           (* 全サンプルの色を合計 *)
-          val total_color = sum_vectors (List.tabulate (sqrt_spp, colum_color))
+          val total_color = total_sample sqrt_spp
 
           (* 平均色を計算するためのスケール *)
           val scale = Real.fromInt samples_per_pixel
