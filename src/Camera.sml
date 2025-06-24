@@ -90,6 +90,9 @@ struct
       val cam_params = create settings
 
       val samples_per_pixel = #samples_per_pixel settings
+      val sqrt_spp = Real.toInt IEEEReal.TO_NEAREST
+        (Math.sqrt (Real.fromInt samples_per_pixel))
+      val recip_sqrt_spp = 1.0 / (Real.fromInt sqrt_spp)
       val max_depth = #max_depth settings
       val image_height = #image_height cam_params
       val image_width = #image_width settings
@@ -103,6 +106,14 @@ struct
           Vec3.create (x - 0.5, y - 0.5, 0.0)
         end
 
+      fun sample_square_stratified (s_i, s_j) =
+        let
+          val px = (((Real.fromInt s_i) + randReal ()) * recip_sqrt_spp) - 0.5
+          val py = (((Real.fromInt s_j) + randReal ()) * recip_sqrt_spp) - 0.5
+        in
+          Vec3.create (px, py, 0.0)
+        end
+
       fun defocus_disk_sample center () =
         let
           val p = Vec3.random_unit_vector ()
@@ -112,9 +123,9 @@ struct
                (Vec3.scale (#defocus_disk_v cam_params) (#y p)))
         end
 
-      fun get_ray (i, j) =
+      fun get_ray (i, j) (s_i, s_j) =
         let
-          val offset = sample_square ()
+          val offset = sample_square_stratified (s_i, s_j)
 
           val u = Real.fromInt i + (#x offset)
           val v = Real.fromInt j + (#y offset)
@@ -168,18 +179,26 @@ struct
 
       fun compute_pixel_color (i, j) =
         let
-          fun sample_once _ =
-            let val ray = get_ray (i, j)
+
+          val sum_vectors = fn vectors =>
+            (List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero
+               vectors)
+
+          fun sample_once (s_i, s_j) =
+            let val ray = get_ray (i, j) (s_i, s_j)
             in ray_color ray world max_depth
             end
 
-          (* 指定回数サンプリングして色のリストを取得 *)
-          val color_samples = List.tabulate (samples_per_pixel, sample_once)
+          fun colum_color s_i =
+            let
+              val colum_color_samples = List.tabulate (sqrt_spp, fn x =>
+                (sample_once (s_i, x)))
+            in
+              sum_vectors colum_color_samples
+            end
 
           (* 全サンプルの色を合計 *)
-          val total_color =
-            List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero
-              color_samples
+          val total_color = sum_vectors (List.tabulate (sqrt_spp, colum_color))
 
           (* 平均色を計算するためのスケール *)
           val scale = Real.fromInt samples_per_pixel
