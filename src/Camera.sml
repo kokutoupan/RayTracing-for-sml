@@ -88,7 +88,7 @@ struct
     let
       (* 設定からカメラの内部パラメータを計算 *)
       val cam_params = create settings
-      
+
       val samples_per_pixel = #samples_per_pixel settings
       val max_depth = #max_depth settings
       val image_height = #image_height cam_params
@@ -166,33 +166,32 @@ struct
               recode2col recode
             end
 
-      fun compute_pixel_color (i,j) =
-      let
-        fun sample_once _ =
-          let
-            val ray = get_ray (i, j)
-          in
-            ray_color ray world max_depth
-          end
+      fun compute_pixel_color (i, j) =
+        let
+          fun sample_once _ =
+            let val ray = get_ray (i, j)
+            in ray_color ray world max_depth
+            end
 
-        (* 指定回数サンプリングして色のリストを取得 *)
-        val color_samples = List.tabulate (samples_per_pixel, sample_once)
+          (* 指定回数サンプリングして色のリストを取得 *)
+          val color_samples = List.tabulate (samples_per_pixel, sample_once)
 
-        (* 全サンプルの色を合計 *)
-        val total_color = List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero color_samples
+          (* 全サンプルの色を合計 *)
+          val total_color =
+            List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero
+              color_samples
 
-        (* 平均色を計算するためのスケール *)
-        val scale = Real.fromInt samples_per_pixel
-      in
-        (Vec3.divide total_color scale)
-      end
+          (* 平均色を計算するためのスケール *)
+          val scale = Real.fromInt samples_per_pixel
+        in
+          (Vec3.divide total_color scale)
+        end
 
       (* === レンダリング本体 === *)
 
-      val header = "P3\n"
-                 ^ Int.toString image_width ^ " "
-                 ^ Int.toString image_height ^ "\n"
-                 ^ "255\n"
+      val header =
+        "P3\n" ^ Int.toString image_width ^ " " ^ Int.toString image_height
+        ^ "\n" ^ "255\n"
 
 
       val out = TextIO.openOut filename
@@ -204,20 +203,17 @@ struct
           (fn j =>
              let
                val _ = print
-                 ("\rScanlines remaining:"
-                  ^ Int.toString (image_height - j) ^ "   ")
+                 ("\rScanlines remaining:" ^ Int.toString (image_height - j)
+                  ^ "   ")
              in
                List.app
-                 (fn i =>
-                    let
-                      val pixel_color = compute_pixel_color (i, j)
-                    in
-                      Color.write_color out pixel_color
-                    end) (List.tabulate (image_width, fn x => x))
+                 (fn i => let val pixel_color = compute_pixel_color (i, j)
+                          in Color.write_color out pixel_color
+                          end) (List.tabulate (image_width, fn x => x))
              end) (List.tabulate (image_height, fn y => y))
 
       val _ = TextIO.closeOut out
     in
-      print("\nDone.\n")
+      print ("\nDone.\n")
     end
 end
