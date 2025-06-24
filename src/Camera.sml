@@ -88,6 +88,11 @@ struct
     let
       (* 設定からカメラの内部パラメータを計算 *)
       val cam_params = create settings
+      
+      val samples_per_pixel = #samples_per_pixel settings
+      val max_depth = #max_depth settings
+      val image_height = #image_height cam_params
+      val image_width = #image_width settings
 
       (* ヘルパー関数をrender関数の内部で定義 *)
       fun sample_square () =
@@ -161,15 +166,38 @@ struct
               recode2col recode
             end
 
+      fun compute_pixel_color (i,j) =
+      let
+        fun sample_once _ =
+          let
+            val ray = get_ray (i, j)
+          in
+            ray_color ray world max_depth
+          end
+
+        (* 指定回数サンプリングして色のリストを取得 *)
+        val color_samples = List.tabulate (samples_per_pixel, sample_once)
+
+        (* 全サンプルの色を合計 *)
+        val total_color = List.foldl (fn (color, sum) => Vec3.add color sum) Vec3.zero color_samples
+
+        (* 平均色を計算するためのスケール *)
+        val scale = Real.fromInt samples_per_pixel
+      in
+        (Vec3.divide total_color scale)
+      end
+
       (* === レンダリング本体 === *)
+
+      val header = "P3\n"
+                 ^ Int.toString image_width ^ " "
+                 ^ Int.toString image_height ^ "\n"
+                 ^ "255\n"
+
+
       val out = TextIO.openOut filename
 
-      val _ = TextIO.output (out, "P3\n")
-      val _ = TextIO.output
-        ( out
-        , Int.toString (#image_width settings) ^ " "
-          ^ Int.toString (#image_height cam_params) ^ "\n255\n"
-        )
+      val _ = TextIO.output (out, header)
 
       val _ =
         List.app
@@ -177,29 +205,19 @@ struct
              let
                val _ = print
                  ("\rScanlines remaining:"
-                  ^ Int.toString ((#image_height cam_params) - j) ^ "   ")
+                  ^ Int.toString (image_height - j) ^ "   ")
              in
                List.app
                  (fn i =>
                     let
-                      val col =
-                        foldr
-                          (fn (_, acc) =>
-                             Vec3.add
-                               (ray_color (get_ray (i, j)) world
-                                  (#max_depth settings)) acc) Vec3.zero
-                          (List.tabulate ((#samples_per_pixel settings), fn _ =>
-                             ()))
-                      val _ = Color.write_color out (Vec3.divide col
-                        (Real.fromInt (#samples_per_pixel settings)))
+                      val pixel_color = compute_pixel_color (i, j)
                     in
-                      ()
-                    end) (List.tabulate ((#image_width settings), fn x => x))
-             end) (List.tabulate ((#image_height cam_params), fn y => y))
+                      Color.write_color out pixel_color
+                    end) (List.tabulate (image_width, fn x => x))
+             end) (List.tabulate (image_height, fn y => y))
 
       val _ = TextIO.closeOut out
-      val _ = print ("\nDone.\n")
     in
-      ()
+      print("\nDone.\n")
     end
 end

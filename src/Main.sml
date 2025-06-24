@@ -328,10 +328,10 @@ struct
     end
 
 
-  val output = "output/out.ppm";
+  val output = "output/out_before.ppm";
 
   (*val wd_obj = many_spheres_stage ();*)
-  val (cam_settings, wd_obj) = cornell_smoke ();
+  val (cam_settings, wd_obj) = cornell_box ();
 
   fun render output =
     let
